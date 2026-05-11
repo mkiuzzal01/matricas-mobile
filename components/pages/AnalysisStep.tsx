@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useAppDispatch } from '@/redux/hooks';
-import { nextStep } from '@/redux/features/surveySlice';
 import { Colors } from '@/theme/colors';
+import { useRouter } from 'expo-router';
 
 export default function AnalysisStep() {
   const theme = Colors.dark;
-  const dispatch = useAppDispatch();
+  const router = useRouter();
+
+  const handleResult = () => {
+    router.replace('/(screens)/home/Analysis');
+  };
 
   const [localStep, setLocalStep] = useState(0);
 
@@ -17,10 +20,9 @@ export default function AnalysisStep() {
     { label: 'Finalizing', sub: 'Preparing summary' },
   ];
 
-  // 🔥 animation engine
   useEffect(() => {
     if (localStep >= steps.length) {
-      dispatch(nextStep());
+      handleResult();
       return;
     }
 

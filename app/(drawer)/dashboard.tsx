@@ -1,10 +1,13 @@
 import AppLayout from '@/components/layouts/AppLayout';
-import { Text } from 'react-native';
+import { View, Text } from 'react-native';
+import { Colors } from '@/theme/colors';
 
 export default function Dashboard() {
   return (
     <AppLayout>
-      <Text>Dashboard</Text>
+      <View>
+        <Text style={{ color: Colors.dark.foreground }}>Dashboard</Text>
+      </View>
     </AppLayout>
   );
 }

@@ -1,5 +1,4 @@
 import { Colors } from '@/theme/colors';
-import React from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -9,12 +8,10 @@ import {
 } from 'react-native';
 import Card from '../cards/Card';
 import AppLayout from '../layouts/AppLayout';
-import { useAppDispatch } from '@/redux/hooks';
-import { nextStep } from '@/redux/features/surveySlice';
+import { router } from 'expo-router';
 
 export default function SummaryStep() {
   const theme = Colors.dark;
-  const dispatch = useAppDispatch();
 
   // dummy data
   const data = {
@@ -44,6 +41,9 @@ export default function SummaryStep() {
   };
 
   const actionButtons = ['Download PDF', 'Start Evaluation'];
+  const handleStartEvaluation = () => {
+    router.push('/(screens)/home/Search');
+  };
 
   return (
     <AppLayout>
@@ -123,7 +123,7 @@ export default function SummaryStep() {
 
         {/* SECONDARY */}
         <TouchableOpacity
-          onPress={() => dispatch(nextStep())}
+          onPress={handleStartEvaluation}
           activeOpacity={0.8}
           style={styles.secondaryBtn}
         >

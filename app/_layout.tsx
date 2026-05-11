@@ -1,6 +1,6 @@
-import React from 'react';
-import { Stack } from 'expo-router';
 import StoreProvider from '@/components/providers/StoreProvider';
+import { Stack } from 'expo-router';
+import React from 'react';
 
 export default function RootLayout() {
   return (
@@ -11,6 +11,7 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="(drawer)" />
+        <Stack.Screen name="(screens)" />
       </Stack>
     </StoreProvider>
   );

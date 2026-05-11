@@ -1,21 +1,23 @@
-import { useAppDispatch } from '@/redux/hooks';
 import { Colors } from '@/theme/colors';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  Text,
-  TouchableOpacity,
-  TextInput,
-  View,
   StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import AppLayout from '../layouts/AppLayout';
-import { nextStep } from '@/redux/features/surveySlice';
 
 export default function SearchStep() {
   const theme = Colors.dark;
-  const dispatch = useAppDispatch();
-
   const [query, setQuery] = useState('');
+  const router = useRouter();
+
+  const handleNavigate = () => {
+    router.push('/(screens)/home/Result');
+  };
 
   const suggestions = [
     { id: '1', label: 'Dhaka' },
@@ -25,7 +27,6 @@ export default function SearchStep() {
     { id: '5', label: 'Khulna' },
   ];
 
-  // ✅ FILTER LOGIC (autocomplete)
   const filteredSuggestions =
     query.trim().length > 0
       ? suggestions.filter((item) =>
@@ -56,7 +57,7 @@ export default function SearchStep() {
               <TouchableOpacity
                 key={item.id}
                 activeOpacity={0.7}
-                onPress={() => dispatch(nextStep())}
+                onPress={() => handleNavigate()}
                 style={styles.suggestionItem}
               >
                 <View style={styles.dot} />
@@ -73,7 +74,7 @@ export default function SearchStep() {
           {suggestions.map((item) => (
             <TouchableOpacity
               key={item.id}
-              onPress={() => dispatch(nextStep())}
+              onPress={() => handleNavigate()}
               activeOpacity={0.7}
               style={styles.chip}
             >

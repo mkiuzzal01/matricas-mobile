@@ -2,8 +2,7 @@ import { Text, View, TouchableOpacity } from 'react-native';
 import React from 'react';
 import AppLayout from '../layouts/AppLayout';
 import { Colors } from '@/theme/colors';
-import { useAppDispatch } from '@/redux/hooks';
-import { nextStep } from '@/redux/features/surveySlice';
+import { router } from 'expo-router';
 
 const initial = {
   label: 'Data-driven real estate intelligence',
@@ -18,7 +17,10 @@ const initial = {
 
 export default function InitialStep() {
   const theme = Colors.dark;
-  const dispatch = useAppDispatch();
+
+  const handleNavigate = () => {
+    router.push('/(screens)/home/Search');
+  };
 
   return (
     <AppLayout>
@@ -78,7 +80,7 @@ export default function InitialStep() {
 
         <View style={{ flexDirection: 'row', marginTop: 25, gap: 10 }}>
           <TouchableOpacity
-            onPress={() => dispatch(nextStep())}
+            onPress={handleNavigate}
             style={{
               backgroundColor: theme.primary,
               padding: 12,
@@ -91,7 +93,7 @@ export default function InitialStep() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => dispatch(nextStep())}
+            onPress={handleNavigate}
             style={{
               borderWidth: 1,
               borderColor: theme.border,
