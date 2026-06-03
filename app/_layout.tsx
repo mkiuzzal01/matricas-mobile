@@ -11,7 +11,6 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="(drawer)" />
-        <Stack.Screen name="(screens)" />
       </Stack>
     </StoreProvider>
   );

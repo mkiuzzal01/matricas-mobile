@@ -11,9 +11,6 @@ type Props = {
 };
 
 export default function AppLayout({ children }: Props) {
-  const theme = Colors.dark;
-  const styles = createStyles(theme);
-
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <Navbar />
@@ -23,15 +20,14 @@ export default function AppLayout({ children }: Props) {
   );
 }
 
-const createStyles = (theme: typeof Colors.light) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.background,
-    },
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.dark.background,
+  },
 
-    content: {
-      flex: 1,
-      padding: 10,
-    },
-  });
+  content: {
+    flex: 1,
+    padding: 10,
+  },
+});

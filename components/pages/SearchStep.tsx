@@ -9,23 +9,42 @@ import {
   View,
 } from 'react-native';
 import AppLayout from '../layouts/AppLayout';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { setSearchCity } from '@/redux/features/surveySlice';
+
+const suggestions = [
+  { id: '1', label: 'München' },
+  { id: '2', label: 'Berlin' },
+  { id: '3', label: 'Hamburg' },
+  { id: '4', label: 'Frankfurt' },
+  { id: '5', label: 'Köln' },
+];
+
+const translations = {
+  en: {
+    title: 'Search Location',
+    placeholder: 'Search address...',
+    examples: 'Examples:',
+  },
+  de: {
+    title: 'Standort suchen',
+    placeholder: 'Adresse suchen...',
+    examples: 'Beispiele:',
+  },
+};
 
 export default function SearchStep() {
   const theme = Colors.dark;
   const [query, setQuery] = useState('');
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const lang = useAppSelector((state) => state.language.lang);
+  const text = translations[lang];
 
-  const handleNavigate = () => {
-    router.push('/(screens)/home/Result');
+  const handleNavigate = (city: string) => {
+    dispatch(setSearchCity(city));
+    router.push('/analysis');
   };
-
-  const suggestions = [
-    { id: '1', label: 'Dhaka' },
-    { id: '2', label: 'Chattogram' },
-    { id: '3', label: 'Sylhet' },
-    { id: '4', label: 'Rajshahi' },
-    { id: '5', label: 'Khulna' },
-  ];
 
   const filteredSuggestions =
     query.trim().length > 0
@@ -38,13 +57,14 @@ export default function SearchStep() {
     <AppLayout>
       <View style={[styles.container, { backgroundColor: theme.background }]}>
         {/* TITLE */}
-        <Text style={styles.title}>Search Location</Text>
+        <Text style={styles.title}>{text.title}</Text>
 
         {/* INPUT */}
         <View style={styles.inputWrapper}>
           <TextInput
             value={query}
-            placeholder="Search address..."
+            onChangeText={setQuery}
+            placeholder={text.placeholder}
             placeholderTextColor="#67829a"
             style={styles.input}
           />
@@ -57,7 +77,7 @@ export default function SearchStep() {
               <TouchableOpacity
                 key={item.id}
                 activeOpacity={0.7}
-                onPress={() => handleNavigate()}
+                onPress={() => handleNavigate(item.label)}
                 style={styles.suggestionItem}
               >
                 <View style={styles.dot} />
@@ -69,12 +89,12 @@ export default function SearchStep() {
 
         {/* EXAMPLES SECTION */}
         <View style={styles.examplesWrapper}>
-          <Text style={styles.examplesLabel}>Examples:</Text>
+          <Text style={styles.examplesLabel}>{text.examples}</Text>
 
           {suggestions.map((item) => (
             <TouchableOpacity
               key={item.id}
-              onPress={() => handleNavigate()}
+              onPress={() => handleNavigate(item.label)}
               activeOpacity={0.7}
               style={styles.chip}
             >

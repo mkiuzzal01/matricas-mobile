@@ -5,15 +5,11 @@ export type TNavigation = {
 
 export const navigation: TNavigation[] = [
   {
-    title: 'Home',
-    route: 'home',
+    title: "Home",
+    route: "home",
   },
   {
-    title: 'Dashboard',
-    route: 'dashboard',
-  },
-  {
-    title: 'Pricing',
-    route: 'pricing',
+    title: "Pricing",
+    route: "pricing",
   },
 ];

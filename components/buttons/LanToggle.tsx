@@ -1,17 +1,20 @@
 import { Colors } from '@/theme/colors';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { toggleLanguage } from '@/redux/features/languageSlice';
 
 export default function LanToggle() {
-  const [lan, setLan] = React.useState<'EN' | 'DE'>('EN');
+  const dispatch = useAppDispatch();
+  const lang = useAppSelector((state) => state.language.lang);
 
   return (
     <View style={styles.container}>
       <Pressable
         style={styles.button}
-        onPress={() => setLan(lan === 'EN' ? 'DE' : 'EN')}
+        onPress={() => dispatch(toggleLanguage())}
       >
-        <Text style={styles.text}>{lan}</Text>
+        <Text style={styles.text}>{lang.toUpperCase()}</Text>
       </Pressable>
     </View>
   );

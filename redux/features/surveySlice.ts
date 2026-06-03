@@ -7,12 +7,14 @@ type TSurveyState = {
   step: TSurveyStep;
   summaryId: string;
   surveyResults: TSurveyResults | null;
+  searchCity: string;
 };
 
 const initialState: TSurveyState = {
   step: 'initialView',
   summaryId: '',
   surveyResults: null,
+  searchCity: '',
 };
 
 const surveySlice = createSlice({
@@ -45,8 +47,11 @@ const surveySlice = createSlice({
         state.step = 'analysis';
       }
     },
+    setSearchCity: (state, action) => {
+      state.searchCity = action.payload;
+    },
   },
 });
 
-export const { nextStep, prevStep, setSummaryId } = surveySlice.actions;
+export const { nextStep, prevStep, setSummaryId, setSearchCity } = surveySlice.actions;
 export default surveySlice.reducer;

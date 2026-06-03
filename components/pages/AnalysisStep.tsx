@@ -1,24 +1,42 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Colors } from '@/theme/colors';
 import { useRouter } from 'expo-router';
+import { useAppSelector } from '@/redux/hooks';
+
+const translations = {
+  en: {
+    title: 'Analyzing Property...',
+    steps: [
+      { label: 'Analyzing data', sub: 'Processing location data' },
+      { label: 'Calculating metrics', sub: 'Running AI model' },
+      { label: 'Generating report', sub: 'Building insights' },
+      { label: 'Finalizing', sub: 'Preparing summary' },
+    ],
+  },
+  de: {
+    title: 'Immobilie wird analysiert...',
+    steps: [
+      { label: 'Daten werden analysiert', sub: 'Verarbeitung von Standortdaten' },
+      { label: 'Kennzahlen werden berechnet', sub: 'AI-Modell wird ausgeführt' },
+      { label: 'Bericht wird generiert', sub: 'Erkenntnisse werden aufbereitet' },
+      { label: 'Abschließen', sub: 'Zusammenfassung wird vorbereitet' },
+    ],
+  },
+};
 
 export default function AnalysisStep() {
   const theme = Colors.dark;
   const router = useRouter();
+  const lang = useAppSelector((state) => state.language.lang);
+  const text = translations[lang];
+  const steps = text.steps;
 
-  const handleResult = () => {
-    router.replace('/(screens)/home/Analysis');
-  };
+  const handleResult = useCallback(() => {
+    router.replace('/result');
+  }, [router]);
 
   const [localStep, setLocalStep] = useState(0);
-
-  const steps = [
-    { label: 'Analyzing data', sub: 'Processing location data' },
-    { label: 'Calculating metrics', sub: 'Running AI model' },
-    { label: 'Generating report', sub: 'Building insights' },
-    { label: 'Finalizing', sub: 'Preparing summary' },
-  ];
 
   useEffect(() => {
     if (localStep >= steps.length) {
@@ -31,7 +49,7 @@ export default function AnalysisStep() {
     }, 700);
 
     return () => clearTimeout(timer);
-  }, [localStep]);
+  }, [localStep, steps.length, handleResult]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -42,7 +60,7 @@ export default function AnalysisStep() {
       </View>
 
       {/* STATUS */}
-      <Text style={styles.title}>Analyzing Property...</Text>
+      <Text style={styles.title}>{text.title}</Text>
 
       {/* STEPS */}
       <View style={styles.steps}>
