@@ -1,8 +1,8 @@
-import { Colors } from '@/theme/colors';
-import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { toggleLanguage } from '@/redux/features/languageSlice';
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { toggleLanguage } from "@/redux/slices/languageSlice";
+import { Colors } from "@/theme/colors";
+import React from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function LanToggle() {
   const dispatch = useAppDispatch();
@@ -22,8 +22,8 @@ export default function LanToggle() {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
 
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
 
   text: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.dark.foreground,
   },
 });

@@ -9,7 +9,8 @@ import {
   View,
 } from "react-native";
 import { Colors } from "@/theme/colors";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { logout } from "@/redux/slices/authSlice";
 
 import { useRouter } from 'expo-router';
 
@@ -36,9 +37,16 @@ export default function AvatarDropdown() {
   const [dropdownRight, setDropdownRight] = useState(16);
   const avatarRef = useRef<View>(null);
   const router = useRouter();
+  const dispatch = useAppDispatch();
 
   const lang = useAppSelector((state) => state.language.lang);
+  const { user } = useAppSelector((state) => state.auth);
   const t = translations[lang];
+
+  const handleLogout = () => {
+    dispatch(logout());
+    router.replace('/(drawer)/home');
+  };
 
   const toggleDropdown = () => {
     if (!visible && avatarRef.current) {
@@ -54,15 +62,15 @@ export default function AvatarDropdown() {
 
   const menuItems = useMemo(
     () => [
-      { label: t.profile, action: () => router.push('/profile') },
+      { label: t.profile, action: () => router.push('/(drawer)/Profile') },
       {
         label: t.subscription,
-        action: () => router.push('/subscription'),
+        action: () => router.push('/(drawer)/subscription'),
       },
-      { label: t.settings, action: () => router.push('/settings') },
+      { label: t.settings, action: () => router.push('/(drawer)/settings') },
       {
         label: t.logout,
-        action: () => router.replace('/'),
+        action: handleLogout,
         isDestructive: true,
       },
     ],
@@ -74,7 +82,7 @@ export default function AvatarDropdown() {
       <Pressable onPress={toggleDropdown} style={styles.avatarPressable}>
         <Image
           source={{
-            uri: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
+            uri: user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
           }}
           style={styles.avatarImage}
         />
@@ -98,8 +106,8 @@ export default function AvatarDropdown() {
             ]}
           >
             <View style={styles.userInfoHeader}>
-              <Text style={styles.userName}>Sarah Jenkins</Text>
-              <Text style={styles.userEmail}>sarah.j@example.com</Text>
+              <Text style={styles.userName}>{user?.name || "Guest User"}</Text>
+              <Text style={styles.userEmail}>{user?.email || "guest@example.com"}</Text>
             </View>
             <View style={styles.divider} />
 

@@ -1,41 +1,41 @@
-import { Colors } from '@/theme/colors';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { setSearchCity } from "@/redux/slices/surveySlice";
+import { Colors } from "@/theme/colors";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-} from 'react-native';
-import AppLayout from '../layouts/AppLayout';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { setSearchCity } from '@/redux/features/surveySlice';
+} from "react-native";
+import AppLayout from "../layouts/AppLayout";
 
 const suggestions = [
-  { id: '1', label: 'München' },
-  { id: '2', label: 'Berlin' },
-  { id: '3', label: 'Hamburg' },
-  { id: '4', label: 'Frankfurt' },
-  { id: '5', label: 'Köln' },
+  { id: "1", label: "München" },
+  { id: "2", label: "Berlin" },
+  { id: "3", label: "Hamburg" },
+  { id: "4", label: "Frankfurt" },
+  { id: "5", label: "Köln" },
 ];
 
 const translations = {
   en: {
-    title: 'Search Location',
-    placeholder: 'Search address...',
-    examples: 'Examples:',
+    title: "Search Location",
+    placeholder: "Search address...",
+    examples: "Examples:",
   },
   de: {
-    title: 'Standort suchen',
-    placeholder: 'Adresse suchen...',
-    examples: 'Beispiele:',
+    title: "Standort suchen",
+    placeholder: "Adresse suchen...",
+    examples: "Beispiele:",
   },
 };
 
 export default function SearchStep() {
   const theme = Colors.dark;
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const router = useRouter();
   const dispatch = useAppDispatch();
   const lang = useAppSelector((state) => state.language.lang);
@@ -43,7 +43,7 @@ export default function SearchStep() {
 
   const handleNavigate = (city: string) => {
     dispatch(setSearchCity(city));
-    router.push('/analysis');
+    router.push("/analysis");
   };
 
   const filteredSuggestions =
@@ -110,29 +110,29 @@ export default function SearchStep() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 20,
   },
 
   title: {
-    color: '#5a9e8e',
+    color: "#5a9e8e",
     fontSize: 12,
     letterSpacing: 3,
-    textTransform: 'uppercase',
-    textAlign: 'center',
+    textTransform: "uppercase",
+    textAlign: "center",
     marginBottom: 20,
   },
 
   inputWrapper: {
-    backgroundColor: '#1a2937',
+    backgroundColor: "#1a2937",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: "rgba(255,255,255,0.1)",
     paddingHorizontal: 12,
   },
 
   input: {
-    color: '#fff',
+    color: "#fff",
     paddingVertical: 14,
     fontSize: 15,
   },
@@ -144,37 +144,37 @@ const styles = StyleSheet.create({
   suggestionItem: {
     padding: 12,
     borderRadius: 8,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: "rgba(255,255,255,0.05)",
     marginBottom: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
 
   dot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#5a9e8e',
+    backgroundColor: "#5a9e8e",
     marginRight: 10,
   },
 
   suggestionText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 13,
   },
 
   examplesWrapper: {
     marginTop: 25,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
   },
 
   examplesLabel: {
     fontSize: 10,
     letterSpacing: 3,
-    textTransform: 'uppercase',
-    color: '#30455a',
+    textTransform: "uppercase",
+    color: "#30455a",
     marginRight: 6,
   },
 
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: "rgba(255,255,255,0.1)",
     marginRight: 6,
     marginBottom: 6,
   },
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   chipText: {
     fontSize: 10,
     letterSpacing: 2,
-    textTransform: 'uppercase',
-    color: '#30455a',
+    textTransform: "uppercase",
+    color: "#30455a",
   },
 });

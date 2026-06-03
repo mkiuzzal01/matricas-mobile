@@ -1,19 +1,19 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 type LanguageState = {
-  lang: 'en' | 'de';
+  lang: "en" | "de";
 };
 
 const initialState: LanguageState = {
-  lang: 'en',
+  lang: "en",
 };
 
 const languageSlice = createSlice({
-  name: 'language',
+  name: "language",
   initialState,
   reducers: {
     toggleLanguage: (state) => {
-      state.lang = state.lang === 'en' ? 'de' : 'en';
+      state.lang = state.lang === "en" ? "de" : "en";
     },
     setLanguage: (state, action) => {
       state.lang = action.payload;
