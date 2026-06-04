@@ -1,4 +1,3 @@
-import React from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -10,27 +9,28 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-
 import AppForm from "../AppForm";
 import AppTextInput from "../inputs/TextInput";
 import AppFormSubmit from "@/components/buttons/AppFormSubmit";
 import SocialLogin from "@/components/shared/SocialLogin";
-
-import { useAppSelector } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { Colors } from "@/theme/colors";
+import { useLoginMutation } from "@/redux/features/auth/auth.api";
+import { FieldValues } from "react-hook-form";
+import { setUser } from "@/redux/features/auth/auth.slice";
+import { toast } from "@/utils/toast";
 
-/** ---------------- TYPES ---------------- */
 type LoginFormData = {
   email: string;
   password: string;
 };
 
-/** ---------------- CONSTANTS ---------------- */
 const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 
-/** ---------------- LOGIN SCREEN ---------------- */
 export default function LoginForm() {
+  const dispatch = useAppDispatch();
   const lang = useAppSelector((state) => state.language.lang);
+  const [login] = useLoginMutation();
 
   const t =
     lang === "de"
@@ -69,22 +69,20 @@ export default function LoginForm() {
           orContinue: "Or continue with",
         };
 
-  /** ---------------- SUBMIT ---------------- */
-  const onSubmit = async (data: LoginFormData, reset: () => void) => {
+  const onSubmit = async (data: FieldValues, reset: () => void) => {
     try {
-      console.log("LOGIN DATA:", data);
-
-      // await login API here
-
-      reset();
-
-      router.replace("/(drawer)/home");
+      const res = await login(data as LoginFormData).unwrap();
+      if (res?.message) {
+        toast.info(res?.message);
+        // dispatch(setUser(res.user));
+        // reset();
+        router.replace("/home");
+      }
     } catch (error) {
       console.log("LOGIN ERROR:", error);
     }
   };
 
-  /** ---------------- UI ---------------- */
   return (
     <KeyboardAvoidingView
       style={styles.container}

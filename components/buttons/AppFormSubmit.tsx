@@ -4,11 +4,13 @@ import { FieldValues, SubmitHandler, useFormContext } from "react-hook-form";
 
 interface Props<T extends FieldValues = FieldValues> {
   title: string;
+  isLoading?: boolean;
   __submit?: SubmitHandler<T>;
 }
 
 export default function AppFormSubmit<T extends FieldValues = FieldValues>({
   title,
+  isLoading,
   __submit,
 }: Props<T>) {
   const {
@@ -18,12 +20,16 @@ export default function AppFormSubmit<T extends FieldValues = FieldValues>({
 
   return (
     <Pressable
-      onPress={isSubmitting ? undefined : handleSubmit(__submit ?? (() => {}))}
-      disabled={isSubmitting}
+      onPress={
+        isSubmitting || isLoading
+          ? undefined
+          : handleSubmit(__submit ?? (() => {}))
+      }
+      disabled={isSubmitting || isLoading}
       style={({ pressed }) => [
         styles.button,
         pressed && !isSubmitting && styles.pressed,
-        isSubmitting && styles.disabled,
+        (isSubmitting || isLoading) && styles.disabled,
       ]}
     >
       {isSubmitting ? (

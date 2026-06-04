@@ -1,89 +1,160 @@
-import React from "react";
+import { router } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
-import { FieldValues } from "react-hook-form";
-import { useAppSelector } from "@/redux/hooks";
-import { Colors } from "@/theme/colors";
 
-import AppForm from "../AppForm";
 import AppFormSubmit from "@/components/buttons/AppFormSubmit";
+import AppForm from "../AppForm";
 import OTPInput from "../inputs/OTPInput";
 
-/** ---------------- TYPES ---------------- */
-type OTPFormData = {
-  code: string;
-};
+import {
+  useResendOTPMutation,
+  useVerifyOtpMutation,
+} from "@/redux/features/auth/auth.api";
+import { useAppSelector } from "@/redux/hooks";
 
-/** ---------------- TRANSLATIONS ---------------- */
+import { Colors } from "@/theme/colors";
+import { toast } from "@/utils/toast";
+import { FieldValues } from "react-hook-form";
+
+const RESEND_DELAY = 30;
+
 const translations = {
   en: {
     title: "Verify OTP",
     subtitle: "Enter the 6-digit code sent to your email",
     submit: "Verify",
-    successMsg: "OTP verified successfully!",
-    errorMsg: "Invalid OTP",
+    resend: "Resend OTP",
+    resendIn: "Resend OTP in",
+    sending: "Sending...",
   },
   de: {
     title: "OTP bestätigen",
     subtitle: "Geben Sie den 6-stelligen Code ein",
     submit: "Bestätigen",
-    successMsg: "OTP erfolgreich bestätigt!",
-    errorMsg: "Ungültiger OTP",
+    resend: "OTP erneut senden",
+    resendIn: "OTP erneut senden in",
+    sending: "Wird gesendet...",
   },
 };
 
-/** ---------------- MAIN ---------------- */
-export default function OTPForm() {
+interface Props {
+  email: string;
+}
+
+export default function OTPForm({ email }: Props) {
   const lang = useAppSelector((state) => state.language.lang);
-  const t = lang === "de" ? translations.de : translations.en;
 
-  const onSubmit = async (data: FieldValues, reset: () => void) => {
+  const t = useMemo(
+    () => (lang === "de" ? translations.de : translations.en),
+    [lang],
+  );
+
+  const [timer, setTimer] = useState(RESEND_DELAY);
+
+  const [verifyOtp, { isLoading: verifyLoading }] = useVerifyOtpMutation();
+
+  const [resendOtp, { isLoading: resendLoading }] = useResendOTPMutation();
+
+  useEffect(() => {
+    if (timer <= 0) return;
+
+    const interval = setInterval(() => {
+      setTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timer]);
+
+  const onSubmit = useCallback(
+    async (data: FieldValues, reset: () => void) => {
+      try {
+        const res = await verifyOtp({
+          email,
+          otp: data.code as string,
+        }).unwrap();
+
+        toast.success(res?.message || "OTP verified successfully");
+
+        reset();
+
+        router.replace("/login");
+      } catch (error: any) {
+        toast.error(error?.data?.message || "Failed to verify OTP");
+      }
+    },
+    [verifyOtp, email],
+  );
+
+  const handleResendOTP = useCallback(async () => {
+    if (timer > 0 || resendLoading) return;
+
     try {
-      console.log("OTP VERIFY:", data);
+      const res = await resendOtp({ email }).unwrap();
 
-      // await verifyOTP(data.code)
+      toast.success(res?.message || "OTP sent successfully");
 
-      reset();
-    } catch (e) {
-      console.log("OTP ERROR:", e);
+      setTimer(RESEND_DELAY);
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to resend OTP");
     }
-  };
+  }, [timer, resendLoading, resendOtp]);
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         <View style={styles.card}>
-          {/* HEADER */}
           <Text style={styles.title}>{t.title}</Text>
+
           <Text style={styles.subtitle}>{t.subtitle}</Text>
 
-          {/* FORM */}
-          <AppForm defaultValues={{ code: "" }} onSubmit={onSubmit}>
+          <AppForm onSubmit={onSubmit}>
             <OTPInput
               name="code"
               rules={{
-                required: true,
+                required: "OTP is required",
                 pattern: {
                   value: /^\d{6}$/,
-                  message: "OTP must be 6 digits",
+                  message: "OTP must be exactly 6 digits",
                 },
               }}
             />
 
-            <View style={styles.submitContainer}>
-              <AppFormSubmit title={t.submit} />
+            <AppFormSubmit title={t.submit} isLoading={verifyLoading} />
+
+            <View style={styles.resendContainer}>
+              {timer > 0 ? (
+                <Text style={styles.timerText}>
+                  {t.resendIn} {timer}s
+                </Text>
+              ) : (
+                <Pressable onPress={handleResendOTP} disabled={resendLoading}>
+                  <Text style={styles.resendText}>
+                    {resendLoading ? t.sending : t.resend}
+                  </Text>
+                </Pressable>
+              )}
             </View>
           </AppForm>
         </View>
@@ -92,17 +163,18 @@ export default function OTPForm() {
   );
 }
 
-/** ---------------- STYLES ---------------- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.dark.background,
   },
+
   scroll: {
     flexGrow: 1,
     justifyContent: "center",
     padding: 24,
   },
+
   card: {
     width: "100%",
     maxWidth: 420,
@@ -113,21 +185,36 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.dark.border,
   },
+
   title: {
     fontSize: 24,
     fontWeight: "700",
     color: Colors.dark.foreground,
     textAlign: "center",
   },
+
   subtitle: {
     fontSize: 14,
-    color: Colors.dark.mutedForeground,
-    textAlign: "center",
-    marginTop: 6,
-    marginBottom: 20,
     lineHeight: 20,
+    textAlign: "center",
+    marginTop: 8,
+    marginBottom: 24,
+    color: Colors.dark.mutedForeground,
   },
-  submitContainer: {
-    marginTop: 10,
+
+  resendContainer: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+
+  timerText: {
+    fontSize: 14,
+    color: Colors.dark.mutedForeground,
+  },
+
+  resendText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: Colors.dark.primary,
   },
 });

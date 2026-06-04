@@ -10,9 +10,8 @@ import {
 } from "react-native";
 import { Colors } from "@/theme/colors";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { logout } from "@/redux/slices/authSlice";
-
-import { useRouter } from 'expo-router';
+import { useRouter } from "expo-router";
+import { logout } from "@/redux/features/auth/auth.slice";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -45,7 +44,7 @@ export default function AvatarDropdown() {
 
   const handleLogout = () => {
     dispatch(logout());
-    router.replace('/(drawer)/home');
+    router.replace("/(drawer)/home");
   };
 
   const toggleDropdown = () => {
@@ -62,12 +61,12 @@ export default function AvatarDropdown() {
 
   const menuItems = useMemo(
     () => [
-      { label: t.profile, action: () => router.push('/(drawer)/Profile') },
+      { label: t.profile, action: () => router.push("/(drawer)/Profile") },
       {
         label: t.subscription,
-        action: () => router.push('/(drawer)/subscription'),
+        action: () => router.push("/(drawer)/subscription"),
       },
-      { label: t.settings, action: () => router.push('/(drawer)/settings') },
+      { label: t.settings, action: () => router.push("/(drawer)/settings") },
       {
         label: t.logout,
         action: handleLogout,
@@ -82,7 +81,9 @@ export default function AvatarDropdown() {
       <Pressable onPress={toggleDropdown} style={styles.avatarPressable}>
         <Image
           source={{
-            uri: user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
+            uri:
+              user?.avatar ||
+              "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
           }}
           style={styles.avatarImage}
         />
@@ -107,7 +108,9 @@ export default function AvatarDropdown() {
           >
             <View style={styles.userInfoHeader}>
               <Text style={styles.userName}>{user?.name || "Guest User"}</Text>
-              <Text style={styles.userEmail}>{user?.email || "guest@example.com"}</Text>
+              <Text style={styles.userEmail}>
+                {user?.email || "guest@example.com"}
+              </Text>
             </View>
             <View style={styles.divider} />
 

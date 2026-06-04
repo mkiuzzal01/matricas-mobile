@@ -1,4 +1,13 @@
+import AppFormSubmit from "@/components/buttons/AppFormSubmit";
+import SocialLogin from "@/components/shared/SocialLogin";
+import { useRegisterMutation } from "@/redux/features/auth/auth.api";
+import { useAppSelector } from "@/redux/hooks";
+import { Colors } from "@/theme/colors";
+import { toast } from "@/utils/toast";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useMemo } from "react";
+import { FieldValues } from "react-hook-form";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -8,29 +17,11 @@ import {
   Text,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-
 import AppForm from "../AppForm";
-import AppTextInput from "../inputs/TextInput";
-import AppFormSubmit from "@/components/buttons/AppFormSubmit";
-import SocialLogin from "@/components/shared/SocialLogin";
-import SelectInput from "../inputs/SelectInput";
 import DateInput from "../inputs/DateInput";
+import SelectInput from "../inputs/SelectInput";
+import AppTextInput from "../inputs/TextInput";
 
-import { useAppSelector } from "@/redux/hooks";
-import { Colors } from "@/theme/colors";
-
-/** ---------------- TYPES ---------------- */
-type RegisterFormData = {
-  name: string;
-  email: string;
-  gender: string;
-  dob: string;
-  password: string;
-};
-
-/** ---------------- CONSTANTS ---------------- */
 const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 
 const GENDER_OPTIONS = [
@@ -38,9 +29,9 @@ const GENDER_OPTIONS = [
   { label: "Female", value: "female" },
 ];
 
-/** ---------------- REGISTER SCREEN ---------------- */
 export default function RegisterForm() {
   const lang = useAppSelector((state) => state.language.lang);
+  const [register, { isLoading }] = useRegisterMutation();
 
   const t = useMemo(
     () =>
@@ -108,21 +99,27 @@ export default function RegisterForm() {
     [lang],
   );
 
-  /** ---------------- SUBMIT ---------------- */
-  const onSubmit = async (data: RegisterFormData, reset: () => void) => {
+  const onSubmit = async (data: FieldValues, reset: () => void) => {
     try {
-      console.log("REGISTER DATA:", data);
+      const res = await register(data).unwrap();
 
-      // TODO: API CALL
+      const message = res?.message || "Account created successfully";
+
+      toast.success(message);
 
       reset();
-      router.replace("/login");
-    } catch (error) {
-      console.log("REGISTER ERROR:", error);
+      router.push({
+        pathname: "/verify",
+        params: { email: data?.email },
+      });
+    } catch (error: any) {
+      const errorMessage =
+        error?.data?.message || error?.message || "Something went wrong";
+
+      toast.error(errorMessage);
     }
   };
 
-  /** ---------------- UI ---------------- */
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -133,29 +130,15 @@ export default function RegisterForm() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.card}>
-          {/* HEADER */}
           <View style={styles.header}>
             <View style={styles.iconBox}>
               <Ionicons name="person-add" size={32} color="#fff" />
             </View>
-
             <Text style={styles.title}>{t.title}</Text>
-
             <Text style={styles.subtitle}>{t.subtitle}</Text>
           </View>
-
-          {/* FORM */}
-          <AppForm<RegisterFormData>
-            defaultValues={{
-              name: "",
-              email: "",
-              gender: "",
-              dob: "",
-              password: "",
-            }}
-            onSubmit={onSubmit}
-          >
-            <AppTextInput<RegisterFormData>
+          <AppForm onSubmit={onSubmit}>
+            <AppTextInput
               name="name"
               label={t.nameLabel}
               placeholder={t.namePlaceholder}
@@ -166,7 +149,7 @@ export default function RegisterForm() {
               }}
             />
 
-            <AppTextInput<RegisterFormData>
+            <AppTextInput
               name="email"
               label={t.emailLabel}
               placeholder={t.emailPlaceholder}
@@ -182,20 +165,20 @@ export default function RegisterForm() {
               }}
             />
 
-            <SelectInput<RegisterFormData>
+            <SelectInput
               name="gender"
               label={t.genderLabel}
               placeholder={t.genderPlaceholder}
               options={GENDER_OPTIONS}
             />
 
-            <DateInput<RegisterFormData>
-              name="dob"
+            <DateInput
+              name="d_o_b"
               label={t.dobLabel}
               placeholder={t.dobPlaceholder}
             />
 
-            <AppTextInput<RegisterFormData>
+            <AppTextInput
               name="password"
               label={t.passwordLabel}
               placeholder={t.passwordPlaceholder}
@@ -211,21 +194,16 @@ export default function RegisterForm() {
               }}
             />
 
-            {/* SUBMIT */}
             <AppFormSubmit title={t.submit} />
           </AppForm>
 
-          {/* DIVIDER */}
           <View style={styles.divider}>
             <View style={styles.line} />
             <Text style={styles.dividerText}>{t.orContinue}</Text>
             <View style={styles.line} />
           </View>
 
-          {/* SOCIAL LOGIN */}
           <SocialLogin lang={lang} />
-
-          {/* FOOTER */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>{t.haveAccount} </Text>
 

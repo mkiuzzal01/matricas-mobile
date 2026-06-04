@@ -8,18 +8,11 @@ export type TUser = {
   avatar?: string | null;
 };
 
-type TAuthState = {
+type AuthState = {
   user: TUser | null;
   token: string | null;
-  tokenType?: string | null;
-  expiresAt?: string | null;
-};
-
-const initialState: TAuthState = {
-  user: null,
-  token: null,
-  tokenType: null,
-  expiresAt: null,
+  tokenType: string;
+  expiresAt: string | null;
 };
 
 type LoginPayload = {
@@ -29,6 +22,13 @@ type LoginPayload = {
   expiresAt?: string;
 };
 
+const initialState: AuthState = {
+  user: null,
+  token: null,
+  tokenType: "Bearer",
+  expiresAt: null,
+};
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -36,23 +36,19 @@ const authSlice = createSlice({
   reducers: {
     setUser: (state, action: PayloadAction<LoginPayload>) => {
       state.user = action.payload.user;
-
       state.token = action.payload.token;
-
       state.tokenType = action.payload.tokenType ?? "Bearer";
-
       state.expiresAt = action.payload.expiresAt ?? null;
     },
 
     logout: (state) => {
       state.user = null;
       state.token = null;
-      state.tokenType = null;
+      state.tokenType = "Bearer";
       state.expiresAt = null;
     },
   },
 });
 
 export const { setUser, logout } = authSlice.actions;
-
 export default authSlice.reducer;

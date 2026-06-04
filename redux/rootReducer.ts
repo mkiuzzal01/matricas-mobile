@@ -10,6 +10,4 @@ const rootReducer = combineReducers({
   survey: surveyReducer,
 });
 
-export type RootState = ReturnType<typeof rootReducer>;
-
 export default rootReducer;
