@@ -12,7 +12,7 @@ import { useAppSelector } from "@/redux/hooks";
 
 export default function Navbar() {
   const navigation = useNavigation();
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const token = useAppSelector((state) => state.root.auth.token);
 
   const openDrawer = useCallback(() => {
     navigation.dispatch(DrawerActions.openDrawer());
@@ -43,7 +43,7 @@ export default function Navbar() {
       <View style={styles.rightSection}>
         <LanToggle />
 
-        {isAuthenticated ? (
+        {token ? (
           <AvatarDropdown />
         ) : (
           <Pressable

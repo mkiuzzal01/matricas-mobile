@@ -30,7 +30,7 @@ const GENDER_OPTIONS = [
 ];
 
 export default function RegisterForm() {
-  const lang = useAppSelector((state) => state.language.lang);
+  const lang = useAppSelector((state) => state.root.language.lang);
   const [register, { isLoading }] = useRegisterMutation();
 
   const t = useMemo(

@@ -3,7 +3,6 @@ import { router } from "expo-router";
 import React from "react";
 import { FieldValues } from "react-hook-form";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -18,8 +17,9 @@ import { useAppSelector } from "@/redux/hooks";
 import { Colors } from "@/theme/colors";
 import AppForm from "../AppForm";
 import AppTextInput from "../inputs/TextInput";
+import { useResetPasswordMutation } from "@/redux/features/auth/auth.api";
+import { toast } from "@/utils/toast";
 
-/** ---------------- TRANSLATIONS ---------------- */
 const translations = {
   en: {
     title: "Reset Password",
@@ -76,19 +76,25 @@ const translations = {
     errorMsg: "Zurücksetzen des Passworts fehlgeschlagen",
   },
 };
-
-/** ---------------- MAIN ---------------- */
-export default function ResetForm() {
-  const lang = useAppSelector((state) => state.language.lang);
+interface Props {
+  email: string;
+  otp: string;
+}
+export default function ResetForm({ email, otp }: Props) {
+  const lang = useAppSelector((state) => state.root.language.lang);
   const t = translations[lang];
+  const [resetPassword] = useResetPasswordMutation();
 
   const onSubmit = async (data: FieldValues, reset: () => void) => {
     try {
-      console.log("RESET SUCCESS:", data);
-
-      Alert.alert(t.successMsg);
-    } catch (e) {
-      Alert.alert(t.errorMsg);
+      const res = await resetPassword({ ...data, email, otp }).unwrap();
+      if (res.message) {
+        toast.success(res.message);
+        reset();
+        router.replace("/login");
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to reset password");
     }
   };
 
@@ -133,7 +139,7 @@ export default function ResetForm() {
 
             <AppTextInput
               label={t.confirmPasswordLabel}
-              name="confirmPassword"
+              name="password_confirmation"
               placeholder={t.confirmPasswordPlaceholder}
               leftIcon="lock-closed-outline"
               secureTextEntry

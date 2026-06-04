@@ -38,7 +38,7 @@ export default function SearchStep() {
   const [query, setQuery] = useState("");
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const lang = useAppSelector((state) => state.language.lang);
+  const lang = useAppSelector((state) => state.root.language.lang);
   const text = translations[lang];
 
   const handleNavigate = (city: string) => {

@@ -3,6 +3,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { persistReducer, persistStore } from "redux-persist";
 
 import rootReducer from "./rootReducer";
+import { baseApi } from "./base/baseAPI";
 
 const persistConfig = {
   key: "root",
@@ -13,11 +14,15 @@ const persistConfig = {
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
-  reducer: persistedReducer,
+  reducer: {
+    root: persistedReducer,
+    [baseApi.reducerPath]: baseApi.reducer,
+  },
+
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }),
+    }).concat(baseApi.middleware),
 });
 
 export const persistor = persistStore(store);

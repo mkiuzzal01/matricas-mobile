@@ -29,7 +29,7 @@ const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 
 export default function LoginForm() {
   const dispatch = useAppDispatch();
-  const lang = useAppSelector((state) => state.language.lang);
+  const lang = useAppSelector((state) => state.root.language.lang);
   const [login] = useLoginMutation();
 
   const t =

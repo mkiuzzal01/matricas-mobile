@@ -1,9 +1,7 @@
-import React from "react";
 import {
   View,
   Text,
   StyleSheet,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -11,19 +9,15 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-
 import AppForm from "../AppForm";
 import AppTextInput from "../inputs/TextInput";
 import AppFormSubmit from "@/components/buttons/AppFormSubmit";
 import { Colors } from "@/theme/colors";
 import { useAppSelector } from "@/redux/hooks";
+import { FieldValues } from "react-hook-form";
+import { useForgotMutation } from "@/redux/features/auth/auth.api";
+import { toast } from "@/utils/toast";
 
-/** ---------------- TYPES ---------------- */
-type ForgotFormData = {
-  email: string;
-};
-
-/** ---------------- TRANSLATIONS ---------------- */
 const translations = {
   en: {
     title: "Forgot Password",
@@ -53,25 +47,28 @@ const translations = {
   },
 };
 
-/** ---------------- SCREEN ---------------- */
 export default function ForgotForm() {
-  const lang = useAppSelector((state) => state.language.lang);
+  const [forgotPassword] = useForgotMutation();
+  const lang = useAppSelector((state) => state.root.language.lang);
   const t = translations[lang];
 
-  const onSubmit = async (data: ForgotFormData, reset: () => void) => {
+  const onSubmit = async (data: FieldValues, reset: () => void) => {
     try {
-      console.log("FORGOT PASSWORD:", data);
-
-      await new Promise((r) => setTimeout(r, 1200));
-
-      Alert.alert("Success", t.successMsg);
-
-      reset();
-
-      router.push("/reset");
-    } catch (error) {
-      console.log(error);
-      Alert.alert("Error", t.errorMsg);
+      const res = await forgotPassword(data).unwrap();
+      if (res?.message) {
+        toast.info(res?.message);
+        reset();
+        router.push({
+          pathname: "/verify",
+          params: {
+            email: data.email,
+            otp: res?.data?.otp?.token,
+          },
+        });
+      }
+    } catch (error: any) {
+      console.log("FORGOT PASSWORD ERROR:", error);
+      toast.error(error?.message || t.errorMsg);
     }
   };
 
@@ -96,11 +93,8 @@ export default function ForgotForm() {
           </View>
 
           {/* FORM */}
-          <AppForm<ForgotFormData>
-            defaultValues={{ email: "" }}
-            onSubmit={onSubmit}
-          >
-            <AppTextInput<ForgotFormData>
+          <AppForm defaultValues={{ email: "" }} onSubmit={onSubmit}>
+            <AppTextInput
               name="email"
               label={t.emailLabel}
               placeholder={t.emailPlaceholder}

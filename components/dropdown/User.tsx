@@ -38,8 +38,8 @@ export default function AvatarDropdown() {
   const router = useRouter();
   const dispatch = useAppDispatch();
 
-  const lang = useAppSelector((state) => state.language.lang);
-  const { user } = useAppSelector((state) => state.auth);
+  const lang = useAppSelector((state) => state.root.language.lang);
+  const { user } = useAppSelector((state) => state.root.auth);
   const t = translations[lang];
 
   const handleLogout = () => {

@@ -16,6 +16,7 @@ import OTPInput from "../inputs/OTPInput";
 
 import {
   useResendOTPMutation,
+  useVerifyForgotOtpMutation,
   useVerifyOtpMutation,
 } from "@/redux/features/auth/auth.api";
 import { useAppSelector } from "@/redux/hooks";
@@ -47,10 +48,11 @@ const translations = {
 
 interface Props {
   email: string;
+  otp: string;
 }
 
-export default function OTPForm({ email }: Props) {
-  const lang = useAppSelector((state) => state.language.lang);
+export default function OTPForm({ email, otp }: Props) {
+  const lang = useAppSelector((state) => state.root.language.lang);
 
   const t = useMemo(
     () => (lang === "de" ? translations.de : translations.en),
@@ -60,7 +62,7 @@ export default function OTPForm({ email }: Props) {
   const [timer, setTimer] = useState(RESEND_DELAY);
 
   const [verifyOtp, { isLoading: verifyLoading }] = useVerifyOtpMutation();
-
+  const [verifyForgotOtp] = useVerifyForgotOtpMutation();
   const [resendOtp, { isLoading: resendLoading }] = useResendOTPMutation();
 
   useEffect(() => {
@@ -83,16 +85,33 @@ export default function OTPForm({ email }: Props) {
   const onSubmit = useCallback(
     async (data: FieldValues, reset: () => void) => {
       try {
-        const res = await verifyOtp({
-          email,
-          otp: data.code as string,
-        }).unwrap();
+        if (!otp && email) {
+          const res = await verifyOtp({
+            email,
+            otp: data.code as string,
+          }).unwrap();
 
-        toast.success(res?.message || "OTP verified successfully");
+          toast.success(res?.message || "OTP verified successfully");
 
-        reset();
+          reset();
 
-        router.replace("/login");
+          router.replace("/login");
+        } else {
+          const res = await verifyForgotOtp({
+            otp: otp as string,
+            email,
+          }).unwrap();
+
+          toast.success(res?.message || "OTP verified successfully");
+          reset();
+          router.push({
+            pathname: "/reset",
+            params: {
+              email,
+              otp,
+            },
+          });
+        }
       } catch (error: any) {
         toast.error(error?.data?.message || "Failed to verify OTP");
       }
@@ -105,12 +124,12 @@ export default function OTPForm({ email }: Props) {
 
     try {
       const res = await resendOtp({ email }).unwrap();
-
-      toast.success(res?.message || "OTP sent successfully");
-
-      setTimer(RESEND_DELAY);
+      if (res?.message) {
+        toast.success(res?.message);
+        setTimer(RESEND_DELAY);
+      }
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to resend OTP");
+      toast.error(error?.data?.message);
     }
   }, [timer, resendLoading, resendOtp]);
 

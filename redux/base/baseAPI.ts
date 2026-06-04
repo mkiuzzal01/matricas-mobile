@@ -11,7 +11,7 @@ const baseQuery = fetchBaseQuery({
   credentials: "include",
 
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as RootState).auth.token;
+    const token = (getState() as RootState).root.auth;
 
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
@@ -52,7 +52,7 @@ const baseQueryWithRefreshToken: typeof baseQuery = async (
 
       if (refreshResponse.ok && refreshData?.data?.accessToken) {
         const state = api.getState() as RootState;
-        const currentUser = state.auth.user;
+        const currentUser = state.root.auth.user;
 
         if (currentUser) {
           api.dispatch(

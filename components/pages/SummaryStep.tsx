@@ -1,15 +1,15 @@
-import { Colors } from '@/theme/colors';
+import { Colors } from "@/theme/colors";
 import {
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import Card from '../cards/Card';
-import AppLayout from '../layouts/AppLayout';
-import { router } from 'expo-router';
-import { useAppSelector } from '@/redux/hooks';
+} from "react-native";
+import Card from "../cards/Card";
+import AppLayout from "../layouts/AppLayout";
+import { router } from "expo-router";
+import { useAppSelector } from "@/redux/hooks";
 
 // Dummy data for property valuation
 const dummyData = {
@@ -34,79 +34,79 @@ const dummyData = {
   zimmer: 3,
   wohnflaeche: 80,
   etage: {
-    en: '2nd floor',
-    de: '2. Obergeschoss',
+    en: "2nd floor",
+    de: "2. Obergeschoss",
   },
   baujahr: 1952,
 };
 
 const translations = {
   en: {
-    keyMetrics: 'Key Metrics',
-    locationScore: 'Location Score',
-    market: 'Market',
-    property: 'Property',
-    range: 'Range',
-    confidence: 'Confidence',
-    downloadPdf: 'Download PDF',
-    startEvaluation: 'Start Evaluation',
+    keyMetrics: "Key Metrics",
+    locationScore: "Location Score",
+    market: "Market",
+    property: "Property",
+    range: "Range",
+    confidence: "Confidence",
+    downloadPdf: "Download PDF",
+    startEvaluation: "Start Evaluation",
     metrics: {
-      trend1y: 'Trend 1Y',
-      trend5y: 'Trend 5Y',
-      forecast: 'Forecast',
-      micro: 'Micro',
-      macro: 'Macro',
-      infra: 'Infra',
-      social: 'Social',
-      rent: 'Rent €/m²',
-      yield: 'Yield',
-      multiplier: 'Multiplier',
-      days: 'Days',
-      rooms: 'Rooms',
-      size: 'Size',
-      floor: 'Floor',
-      year: 'Year',
+      trend1y: "Trend 1Y",
+      trend5y: "Trend 5Y",
+      forecast: "Forecast",
+      micro: "Micro",
+      macro: "Macro",
+      infra: "Infra",
+      social: "Social",
+      rent: "Rent €/m²",
+      yield: "Yield",
+      multiplier: "Multiplier",
+      days: "Days",
+      rooms: "Rooms",
+      size: "Size",
+      floor: "Floor",
+      year: "Year",
     },
   },
   de: {
-    keyMetrics: 'Hauptkennzahlen',
-    locationScore: 'Lage-Bewertung',
-    market: 'Markt',
-    property: 'Immobilie',
-    range: 'Spanne',
-    confidence: 'Konfidenz',
-    downloadPdf: 'PDF herunterladen',
-    startEvaluation: 'Neue Bewertung',
+    keyMetrics: "Hauptkennzahlen",
+    locationScore: "Lage-Bewertung",
+    market: "Markt",
+    property: "Immobilie",
+    range: "Spanne",
+    confidence: "Konfidenz",
+    downloadPdf: "PDF herunterladen",
+    startEvaluation: "Neue Bewertung",
     metrics: {
-      trend1y: 'Trend 1J',
-      trend5y: 'Trend 5J',
-      forecast: 'Prognose',
-      micro: 'Mikrolage',
-      macro: 'Makrolage',
-      infra: 'Infrastruktur',
-      social: 'Sozial',
-      rent: 'Miete €/m²',
-      yield: 'Rendite',
-      multiplier: 'Multiplikator',
-      days: 'Tage',
-      rooms: 'Zimmer',
-      size: 'Fläche',
-      floor: 'Etage',
-      year: 'Baujahr',
+      trend1y: "Trend 1J",
+      trend5y: "Trend 5J",
+      forecast: "Prognose",
+      micro: "Mikrolage",
+      macro: "Makrolage",
+      infra: "Infrastruktur",
+      social: "Sozial",
+      rent: "Miete €/m²",
+      yield: "Rendite",
+      multiplier: "Multiplikator",
+      days: "Tage",
+      rooms: "Zimmer",
+      size: "Fläche",
+      floor: "Etage",
+      year: "Baujahr",
     },
   },
 };
 
 export default function SummaryStep() {
   const theme = Colors.dark;
-  const lang = useAppSelector((state) => state.language.lang);
-  const searchCity = useAppSelector((state) => state.survey.searchCity);
+  const lang = useAppSelector((state) => state.root.language.lang);
+  const searchCity = useAppSelector((state) => state.root.survey.searchCity);
   const text = translations[lang];
 
-  const displayCity = searchCity ? `${searchCity}` : 'Marienplatz 1, München';
+  const displayCity = searchCity ? `${searchCity}` : "Marienplatz 1, München";
 
   const handleStartEvaluation = () => {
-    router.push('/search');
+    router.push("/search");
   };
 
   return (
@@ -120,7 +120,9 @@ export default function SummaryStep() {
         <View style={styles.header}>
           <Text style={styles.city}>{displayCity}</Text>
 
-          <Text style={styles.price}>€ {dummyData.marktwert.toLocaleString()}</Text>
+          <Text style={styles.price}>
+            € {dummyData.marktwert.toLocaleString()}
+          </Text>
 
           <Text style={styles.range}>
             {text.range}: € {dummyData.span[0].toLocaleString()} - €
@@ -139,9 +141,21 @@ export default function SummaryStep() {
 
         <View style={styles.grid}>
           <Card label="€/m²" value={dummyData.qm_preis} />
-          <Card label={text.metrics.trend1y} value={`+${dummyData.trend_1j}%`} accent />
-          <Card label={text.metrics.trend5y} value={`+${dummyData.trend_5j}%`} accent />
-          <Card label={text.metrics.forecast} value={`+${dummyData.prognose_1j}%`} accent />
+          <Card
+            label={text.metrics.trend1y}
+            value={`+${dummyData.trend_1j}%`}
+            accent
+          />
+          <Card
+            label={text.metrics.trend5y}
+            value={`+${dummyData.trend_5j}%`}
+            accent
+          />
+          <Card
+            label={text.metrics.forecast}
+            value={`+${dummyData.prognose_1j}%`}
+            accent
+          />
         </View>
 
         {/* LOCATION SCORE */}
@@ -153,9 +167,18 @@ export default function SummaryStep() {
         </View>
 
         <View style={styles.grid}>
-          <Card label={text.metrics.micro} value={dummyData.lage_sub.mikrolage} />
-          <Card label={text.metrics.macro} value={dummyData.lage_sub.makrolage} />
-          <Card label={text.metrics.infra} value={dummyData.lage_sub.infrastruktur} />
+          <Card
+            label={text.metrics.micro}
+            value={dummyData.lage_sub.mikrolage}
+          />
+          <Card
+            label={text.metrics.macro}
+            value={dummyData.lage_sub.makrolage}
+          />
+          <Card
+            label={text.metrics.infra}
+            value={dummyData.lage_sub.infrastruktur}
+          />
           <Card label={text.metrics.social} value={dummyData.lage_sub.sozial} />
         </View>
 
@@ -164,9 +187,19 @@ export default function SummaryStep() {
 
         <View style={styles.grid}>
           <Card label={text.metrics.rent} value={dummyData.miete_kalt} />
-          <Card label={text.metrics.yield} value={`${dummyData.rendite_brutto}%`} accent />
-          <Card label={text.metrics.multiplier} value={`${dummyData.mietmultiplikator}x`} />
-          <Card label={text.metrics.days} value={`${dummyData.vermarktung_tage}`} />
+          <Card
+            label={text.metrics.yield}
+            value={`${dummyData.rendite_brutto}%`}
+            accent
+          />
+          <Card
+            label={text.metrics.multiplier}
+            value={`${dummyData.mietmultiplikator}x`}
+          />
+          <Card
+            label={text.metrics.days}
+            value={`${dummyData.vermarktung_tage}`}
+          />
         </View>
 
         {/* PROPERTY */}
@@ -174,8 +207,14 @@ export default function SummaryStep() {
 
         <View style={styles.grid}>
           <Card label={text.metrics.rooms} value={dummyData.zimmer} />
-          <Card label={text.metrics.size} value={`${dummyData.wohnflaeche} m²`} />
-          <Card label={text.metrics.floor} value={lang === 'de' ? dummyData.etage.de : dummyData.etage.en} />
+          <Card
+            label={text.metrics.size}
+            value={`${dummyData.wohnflaeche} m²`}
+          />
+          <Card
+            label={text.metrics.floor}
+            value={lang === "de" ? dummyData.etage.de : dummyData.etage.en}
+          />
           <Card label={text.metrics.year} value={dummyData.baujahr} />
         </View>
       </ScrollView>
@@ -208,27 +247,27 @@ const styles = StyleSheet.create({
 
   header: {
     paddingVertical: 20,
-    alignItems: 'center',
+    alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomColor: "rgba(255,255,255,0.05)",
     marginBottom: 20,
   },
 
   city: {
-    color: '#9fb0c0',
+    color: "#9fb0c0",
     fontSize: 14,
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
 
   price: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 34,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 
   range: {
-    color: '#7f8ea3',
+    color: "#7f8ea3",
     fontSize: 12,
     marginTop: 6,
   },
@@ -238,49 +277,49 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 20,
-    backgroundColor: 'rgba(90,158,142,0.1)',
+    backgroundColor: "rgba(90,158,142,0.1)",
   },
 
   badgeText: {
-    color: '#5a9e8e',
+    color: "#5a9e8e",
     fontSize: 10,
   },
 
   sectionTitle: {
-    color: '#7f8ea3',
+    color: "#7f8ea3",
     fontSize: 12,
     marginVertical: 10,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
 
   grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
   },
 
   cardLarge: {
-    backgroundColor: '#0d1520',
+    backgroundColor: "#0d1520",
     padding: 20,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 10,
   },
 
   score: {
     fontSize: 48,
-    color: '#5a9e8e',
+    color: "#5a9e8e",
   },
 
   subText: {
-    color: '#7f8ea3',
+    color: "#7f8ea3",
     fontSize: 11,
     marginTop: 6,
   },
 
   /* ACTION BUTTONS */
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 10,
     padding: 12,
   },
@@ -289,17 +328,17 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 6,
-    backgroundColor: 'rgba(90,158,142,0.9)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "rgba(90,158,142,0.9)",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   primaryText: {
-    color: '#080d12',
+    color: "#080d12",
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: "600",
     letterSpacing: 2,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
 
   secondaryBtn: {
@@ -307,15 +346,15 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    alignItems: 'center',
+    borderColor: "rgba(255,255,255,0.1)",
+    alignItems: "center",
   },
 
   secondaryText: {
-    color: '#7f8ea3',
+    color: "#7f8ea3",
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: "600",
     letterSpacing: 2,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
 });

@@ -1,26 +1,35 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Colors } from '@/theme/colors';
-import { useRouter } from 'expo-router';
-import { useAppSelector } from '@/redux/hooks';
+import React, { useEffect, useState, useCallback } from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { Colors } from "@/theme/colors";
+import { useRouter } from "expo-router";
+import { useAppSelector } from "@/redux/hooks";
 
 const translations = {
   en: {
-    title: 'Analyzing Property...',
+    title: "Analyzing Property...",
     steps: [
-      { label: 'Analyzing data', sub: 'Processing location data' },
-      { label: 'Calculating metrics', sub: 'Running AI model' },
-      { label: 'Generating report', sub: 'Building insights' },
-      { label: 'Finalizing', sub: 'Preparing summary' },
+      { label: "Analyzing data", sub: "Processing location data" },
+      { label: "Calculating metrics", sub: "Running AI model" },
+      { label: "Generating report", sub: "Building insights" },
+      { label: "Finalizing", sub: "Preparing summary" },
     ],
   },
   de: {
-    title: 'Immobilie wird analysiert...',
+    title: "Immobilie wird analysiert...",
     steps: [
-      { label: 'Daten werden analysiert', sub: 'Verarbeitung von Standortdaten' },
-      { label: 'Kennzahlen werden berechnet', sub: 'AI-Modell wird ausgeführt' },
-      { label: 'Bericht wird generiert', sub: 'Erkenntnisse werden aufbereitet' },
-      { label: 'Abschließen', sub: 'Zusammenfassung wird vorbereitet' },
+      {
+        label: "Daten werden analysiert",
+        sub: "Verarbeitung von Standortdaten",
+      },
+      {
+        label: "Kennzahlen werden berechnet",
+        sub: "AI-Modell wird ausgeführt",
+      },
+      {
+        label: "Bericht wird generiert",
+        sub: "Erkenntnisse werden aufbereitet",
+      },
+      { label: "Abschließen", sub: "Zusammenfassung wird vorbereitet" },
     ],
   },
 };
@@ -28,12 +37,12 @@ const translations = {
 export default function AnalysisStep() {
   const theme = Colors.dark;
   const router = useRouter();
-  const lang = useAppSelector((state) => state.language.lang);
+  const lang = useAppSelector((state) => state.root.language.lang);
   const text = translations[lang];
   const steps = text.steps;
 
   const handleResult = useCallback(() => {
-    router.replace('/result');
+    router.replace("/result");
   }, [router]);
 
   const [localStep, setLocalStep] = useState(0);
@@ -81,7 +90,7 @@ export default function AnalysisStep() {
               <View
                 style={[
                   styles.stepDot,
-                  { backgroundColor: i <= localStep ? '#5a9e8e' : '#444' },
+                  { backgroundColor: i <= localStep ? "#5a9e8e" : "#444" },
                 ]}
               />
 
@@ -104,8 +113,8 @@ export default function AnalysisStep() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 20,
   },
 
@@ -114,50 +123,50 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     borderWidth: 1,
-    borderColor: 'rgba(90,158,142,0.4)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: "rgba(90,158,142,0.4)",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 20,
   },
 
   loaderRing: {
-    position: 'absolute',
+    position: "absolute",
     width: 80,
     height: 80,
     borderRadius: 40,
     borderWidth: 1,
-    borderColor: 'rgba(90,158,142,0.1)',
+    borderColor: "rgba(90,158,142,0.1)",
   },
 
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#5a9e8e',
+    backgroundColor: "#5a9e8e",
   },
 
   title: {
-    color: '#ffffffaa',
+    color: "#ffffffaa",
     fontSize: 14,
     marginBottom: 25,
-    textAlign: 'center',
+    textAlign: "center",
   },
 
   steps: {
-    width: '100%',
+    width: "100%",
     gap: 10,
   },
 
   step: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 12,
     borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: "rgba(255,255,255,0.03)",
   },
 
   activeStep: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: "rgba(255,255,255,0.06)",
     transform: [{ scale: 1.02 }],
   },
 
@@ -173,21 +182,21 @@ const styles = StyleSheet.create({
   },
 
   stepTitle: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 
   stepSub: {
-    color: '#888',
+    color: "#888",
     fontSize: 10,
     marginTop: 2,
   },
 
   check: {
-    color: '#5a9e8e',
+    color: "#5a9e8e",
     fontSize: 14,
     marginLeft: 10,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });

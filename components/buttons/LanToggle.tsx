@@ -6,7 +6,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function LanToggle() {
   const dispatch = useAppDispatch();
-  const lang = useAppSelector((state) => state.language.lang);
+  const lang = useAppSelector((state) => state.root.language.lang);
 
   return (
     <View style={styles.container}>
