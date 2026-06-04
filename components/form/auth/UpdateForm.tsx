@@ -3,11 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Pressable,
+  useWindowDimensions,
 } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AppForm from "../AppForm";
 import AppTextInput from "../inputs/TextInput";
 import AppFormSubmit from "@/components/buttons/AppFormSubmit";
+
 import { Colors } from "@/theme/colors";
 import { FieldValues } from "react-hook-form";
 import { useAppSelector } from "@/redux/hooks/appHook";
@@ -61,103 +62,105 @@ const translations = {
 };
 
 export default function UpdateForm() {
+  const { height } = useWindowDimensions();
   const lang = useAppSelector((state) => state.root.language.lang);
   const t = translations[lang];
 
   const handleBack = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace("/(drawer)/settings");
-    }
+    if (router.canGoBack()) router.back();
+    else router.replace("/(drawer)/settings");
   };
 
   const onSubmit = async (data: FieldValues, reset: () => void) => {
     try {
-      console.log("UPDATE PASSWORD SUCCESS:", data);
+      console.log("UPDATE PASSWORD:", data);
+      reset();
     } catch (e) {
-      Alert.alert(lang === "de" ? "Fehler" : "Error", t.errorMsg);
+      console.log("ERROR:", e);
     }
   };
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+        style={{ flex: 1 }}
+        contentContainerStyle={[
+          styles.scroll,
+          { minHeight: height }, // ✅ FULL SCREEN FIX
+        ]}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.card}>
-          {/* Logo / Brand Header */}
-          <View style={styles.logoContainer}>
-            <View style={styles.logoBg}>
-              <Ionicons name="trending-up" size={32} color="#ffffff" />
+        <View style={styles.wrapper}>
+          <View style={styles.card}>
+            {/* HEADER */}
+            <View style={styles.logoContainer}>
+              <View style={styles.logoBg}>
+                <Ionicons name="trending-up" size={32} color="#ffffff" />
+              </View>
+
+              <Text style={styles.logoText}>Métricas</Text>
             </View>
-            <Text style={styles.logoText}>Métricas</Text>
-          </View>
 
-          {/* Titles */}
-          <Text style={styles.title}>{t.title}</Text>
-          <Text style={styles.subtitle}>{t.subtitle}</Text>
+            {/* TITLES */}
+            <Text style={styles.title}>{t.title}</Text>
+            <Text style={styles.subtitle}>{t.subtitle}</Text>
 
-          {/* Form */}
-          <AppForm onSubmit={onSubmit}>
-            <AppTextInput
-              label={t.currentPasswordLabel}
-              name="currentPassword"
-              placeholder={t.currentPasswordPlaceholder}
-              leftIcon="lock-closed-outline"
-              secureTextEntry
-              autoCapitalize="none"
-              rules={{ required: t.currentPasswordRequired }}
-            />
+            {/* FORM */}
+            <AppForm onSubmit={onSubmit}>
+              <AppTextInput
+                label={t.currentPasswordLabel}
+                name="currentPassword"
+                placeholder={t.currentPasswordPlaceholder}
+                leftIcon="lock-closed-outline"
+                secureTextEntry
+                rules={{ required: t.currentPasswordRequired }}
+              />
 
-            <AppTextInput
-              label={t.passwordLabel}
-              name="password"
-              placeholder={t.passwordPlaceholder}
-              leftIcon="lock-closed-outline"
-              secureTextEntry
-              autoCapitalize="none"
-              rules={{
-                required: t.passwordRequired,
-                minLength: {
-                  value: 6,
-                  message: t.passwordMinLength,
-                },
-              }}
-            />
+              <AppTextInput
+                label={t.passwordLabel}
+                name="password"
+                placeholder={t.passwordPlaceholder}
+                leftIcon="lock-closed-outline"
+                secureTextEntry
+                rules={{
+                  required: t.passwordRequired,
+                  minLength: {
+                    value: 6,
+                    message: t.passwordMinLength,
+                  },
+                }}
+              />
 
-            <AppTextInput
-              label={t.confirmPasswordLabel}
-              name="confirmPassword"
-              placeholder={t.confirmPasswordPlaceholder}
-              leftIcon="lock-closed-outline"
-              secureTextEntry
-              autoCapitalize="none"
-              rules={{
-                required: t.confirmPasswordRequired,
-              }}
-            />
+              <AppTextInput
+                label={t.confirmPasswordLabel}
+                name="confirmPassword"
+                placeholder={t.confirmPasswordPlaceholder}
+                leftIcon="lock-closed-outline"
+                secureTextEntry
+                rules={{
+                  required: t.confirmPasswordRequired,
+                }}
+              />
 
-            {/* Submit Button */}
-            <AppFormSubmit title={t.submit} />
-          </AppForm>
+              <AppFormSubmit title={t.submit} />
+            </AppForm>
 
-          {/* Cancel Link */}
-          <View style={styles.footer}>
-            <Pressable
-              onPress={handleBack}
-              style={({ pressed }) => [
-                styles.cancelButton,
-                pressed && styles.linkPressed,
-              ]}
-            >
-              <Text style={styles.cancelText}>{t.cancel}</Text>
-            </Pressable>
+            {/* FOOTER */}
+            <View style={styles.footer}>
+              <Pressable
+                onPress={handleBack}
+                style={({ pressed }) => [
+                  styles.cancelButton,
+                  pressed && { opacity: 0.6 },
+                ]}
+              >
+                <Text style={styles.cancelText}>{t.cancel}</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -170,30 +173,40 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.dark.background,
   },
-  scrollContent: {
+
+  scroll: {
     flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  },
+
+  wrapper: {
+    flex: 1,
+    justifyContent: "center", // ✅ safe centering
     padding: 24,
   },
+
   card: {
     width: "100%",
     maxWidth: 400,
+    alignSelf: "center",
     backgroundColor: Colors.dark.card,
     borderRadius: 16,
     padding: 28,
     borderWidth: 1,
     borderColor: Colors.dark.border,
+
+    // optional soft elevation (safe cross-platform)
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 5,
   },
+
   logoContainer: {
     alignItems: "center",
     marginBottom: 20,
   },
+
   logoBg: {
     width: 60,
     height: 60,
@@ -201,19 +214,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#4f46e5",
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#4f46e5",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 4,
   },
+
   logoText: {
     fontSize: 20,
     fontWeight: "700",
     color: Colors.dark.foreground,
     marginTop: 10,
-    letterSpacing: 0.5,
   },
+
   title: {
     fontSize: 26,
     fontWeight: "700",
@@ -221,6 +230,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 6,
   },
+
   subtitle: {
     fontSize: 14,
     color: Colors.dark.mutedForeground,
@@ -228,23 +238,20 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     lineHeight: 20,
   },
-  submitContainer: {
-    marginTop: 8,
-  },
+
   footer: {
     alignItems: "center",
     marginTop: 20,
   },
+
   cancelButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
   },
+
   cancelText: {
     color: Colors.dark.mutedForeground,
     fontSize: 14,
     fontWeight: "500",
-  },
-  linkPressed: {
-    opacity: 0.7,
   },
 });

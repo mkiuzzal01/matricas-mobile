@@ -10,15 +10,17 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
-import AppFormSubmit from "@/components/buttons/AppFormSubmit";
-import { Colors } from "@/theme/colors";
+
 import AppForm from "../AppForm";
 import AppTextInput from "../inputs/TextInput";
+import AppFormSubmit from "@/components/buttons/AppFormSubmit";
+
+import { Colors } from "@/theme/colors";
 import { useResetPasswordMutation } from "@/redux/features/auth/auth.api";
 import { toast } from "@/utils/toast";
 import { useAppSelector } from "@/redux/hooks/appHook";
-
 const translations = {
   en: {
     title: "Reset Password",
@@ -75,23 +77,30 @@ const translations = {
     errorMsg: "Zurücksetzen des Passworts fehlgeschlagen",
   },
 };
-interface Props {
+
+export default function ResetForm({
+  email,
+  otp,
+}: {
   email: string;
   otp: string;
-}
-export default function ResetForm({ email, otp }: Props) {
+}) {
+  const { height } = useWindowDimensions();
   const lang = useAppSelector((state) => state.root.language.lang);
-  const t = translations[lang];
   const [resetPassword] = useResetPasswordMutation();
+
+  const t = translations[lang];
 
   const onSubmit = async (data: FieldValues, reset: () => void) => {
     try {
       const res = await resetPassword({ ...data, email, otp }).unwrap();
-      if (res.message) {
-        toast.success(res.message);
-        reset();
-        router.replace("/login");
-      }
+
+      console.log("reset response:", res);
+
+      toast.success(res?.message || "Password reset successful");
+
+      reset();
+      router.replace("/login");
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to reset password");
     }
@@ -99,69 +108,76 @@ export default function ResetForm({ email, otp }: Props) {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        style={{ flex: 1 }}
+        contentContainerStyle={[
+          styles.scroll,
+          { minHeight: height }, // ✅ FULL SCREEN FIX
+        ]}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.card}>
-          {/* HEADER */}
-          <View style={styles.logoContainer}>
-            <View style={styles.logoBg}>
-              <Ionicons name="trending-up" size={32} color="#fff" />
+        <View style={styles.wrapper}>
+          <View style={styles.card}>
+            {/* HEADER */}
+            <View style={styles.logoContainer}>
+              <View style={styles.logoBg}>
+                <Ionicons name="trending-up" size={32} color="#fff" />
+              </View>
+              <Text style={styles.logoText}>Métricas</Text>
             </View>
-            <Text style={styles.logoText}>Métricas</Text>
-          </View>
 
-          {/* TITLE */}
-          <Text style={styles.title}>{t.title}</Text>
-          <Text style={styles.subtitle}>{t.subtitle}</Text>
+            {/* TITLE */}
+            <Text style={styles.title}>{t.title}</Text>
+            <Text style={styles.subtitle}>{t.subtitle}</Text>
 
-          {/* FORM */}
-          <AppForm onSubmit={onSubmit}>
-            <AppTextInput
-              label={t.passwordLabel}
-              name="password"
-              placeholder={t.passwordPlaceholder}
-              leftIcon="lock-closed-outline"
-              secureTextEntry
-              rules={{
-                required: t.passwordRequired,
-                minLength: {
-                  value: 6,
-                  message: t.passwordMinLength,
-                },
-              }}
-            />
+            {/* FORM */}
+            <AppForm onSubmit={onSubmit}>
+              <AppTextInput
+                label={t.passwordLabel}
+                name="password"
+                placeholder={t.passwordPlaceholder}
+                leftIcon="lock-closed-outline"
+                secureTextEntry
+                rules={{
+                  required: t.passwordRequired,
+                  minLength: {
+                    value: 6,
+                    message: t.passwordMinLength,
+                  },
+                }}
+              />
 
-            <AppTextInput
-              label={t.confirmPasswordLabel}
-              name="password_confirmation"
-              placeholder={t.confirmPasswordPlaceholder}
-              leftIcon="lock-closed-outline"
-              secureTextEntry
-              rules={{
-                required: t.confirmPasswordRequired,
-              }}
-            />
+              <AppTextInput
+                label={t.confirmPasswordLabel}
+                name="password_confirmation"
+                placeholder={t.confirmPasswordPlaceholder}
+                leftIcon="lock-closed-outline"
+                secureTextEntry
+                rules={{
+                  required: t.confirmPasswordRequired,
+                }}
+              />
 
-            <AppFormSubmit title={t.submit} />
-          </AppForm>
+              <AppFormSubmit title={t.submit} />
+            </AppForm>
 
-          {/* BACK */}
-          <View style={styles.footer}>
-            <Pressable
-              onPress={() => router.push("/login")}
-              style={({ pressed }) => [
-                styles.backButton,
-                pressed && styles.linkPressed,
-              ]}
-            >
-              <Ionicons name="arrow-back-outline" size={16} color="#6366f1" />
-              <Text style={styles.backText}>{t.backToLogin}</Text>
-            </Pressable>
+            {/* BACK */}
+            <View style={styles.footer}>
+              <Pressable
+                onPress={() => router.push("/login")}
+                style={({ pressed }) => [
+                  styles.backButton,
+                  pressed && { opacity: 0.6 },
+                ]}
+              >
+                <Ionicons name="arrow-back-outline" size={16} color="#6366f1" />
+                <Text style={styles.backText}>{t.backToLogin}</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -169,31 +185,38 @@ export default function ResetForm({ email, otp }: Props) {
   );
 }
 
-/** ---------------- STYLES ---------------- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.dark.background,
   },
-  scrollContent: {
+
+  scroll: {
     flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  },
+
+  wrapper: {
+    flex: 1,
+    justifyContent: "center", // ✅ safe centering
     padding: 24,
   },
+
   card: {
     width: "100%",
     maxWidth: 420,
+    alignSelf: "center",
     backgroundColor: Colors.dark.card,
     borderRadius: 16,
     padding: 28,
     borderWidth: 1,
     borderColor: Colors.dark.border,
   },
+
   logoContainer: {
     alignItems: "center",
     marginBottom: 20,
   },
+
   logoBg: {
     width: 60,
     height: 60,
@@ -202,12 +225,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+
   logoText: {
     fontSize: 20,
     fontWeight: "700",
     color: Colors.dark.foreground,
     marginTop: 10,
   },
+
   title: {
     fontSize: 26,
     fontWeight: "700",
@@ -215,6 +240,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 6,
   },
+
   subtitle: {
     fontSize: 14,
     color: Colors.dark.mutedForeground,
@@ -222,25 +248,22 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     lineHeight: 20,
   },
-  submitContainer: {
-    marginTop: 8,
-  },
+
   footer: {
     alignItems: "center",
     marginTop: 24,
   },
+
   backButton: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
     paddingVertical: 4,
   },
+
   backText: {
     color: "#6366f1",
     fontSize: 14,
     fontWeight: "600",
-  },
-  linkPressed: {
-    opacity: 0.7,
   },
 });

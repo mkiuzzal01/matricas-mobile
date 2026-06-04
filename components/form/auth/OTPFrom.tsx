@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
 
 import AppFormSubmit from "@/components/buttons/AppFormSubmit";
@@ -46,12 +47,14 @@ const translations = {
   },
 };
 
-interface Props {
+export default function OTPForm({
+  email,
+  otp,
+}: {
   email: string;
   otp: string;
-}
-
-export default function OTPForm({ email, otp }: Props) {
+}) {
+  const { height } = useWindowDimensions();
   const lang = useAppSelector((state) => state.root.language.lang);
 
   const t = useMemo(
@@ -65,73 +68,71 @@ export default function OTPForm({ email, otp }: Props) {
   const [verifyForgotOtp] = useVerifyForgotOtpMutation();
   const [resendOtp, { isLoading: resendLoading }] = useResendOTPMutation();
 
+  /* ---------------- TIMER ---------------- */
   useEffect(() => {
     if (timer <= 0) return;
 
-    const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-
-        return prev - 1;
-      });
+    const id = setInterval(() => {
+      setTimer((prev) => (prev <= 1 ? 0 : prev - 1));
     }, 1000);
 
-    return () => clearInterval(interval);
+    return () => clearInterval(id);
   }, [timer]);
 
+  /* ---------------- VERIFY ---------------- */
   const onSubmit = useCallback(
     async (data: FieldValues, reset: () => void) => {
       try {
-        if (!otp && email) {
+        if (!otp) {
           const res = await verifyOtp({
             email,
-            otp: data.code as string,
+            otp: data.code,
           }).unwrap();
 
-          toast.success(res?.message || "OTP verified successfully");
+          console.log("verify otp response:", res);
+
+          toast.success(res?.message || "OTP verified");
 
           reset();
-
           router.replace("/login");
-        } else {
-          const res = await verifyForgotOtp({
-            otp: otp as string,
-            email,
-          }).unwrap();
-
-          toast.success(res?.message || "OTP verified successfully");
-          reset();
-          router.push({
-            pathname: "/reset",
-            params: {
-              email,
-              otp,
-            },
-          });
+          return;
         }
+
+        const res = await verifyForgotOtp({
+          otp,
+          email,
+        }).unwrap();
+
+        console.log("verfy forgot otp response:", res);
+        toast.success(res?.message || "OTP verified");
+
+        reset();
+
+        router.push({
+          pathname: "/reset",
+          params: { email, otp },
+        });
       } catch (error: any) {
-        toast.error(error?.data?.message || "Failed to verify OTP");
+        toast.error(error?.data?.message || "Verification failed");
       }
     },
-    [verifyOtp, email],
+    [email, otp],
   );
 
+  /* ---------------- RESEND ---------------- */
   const handleResendOTP = useCallback(async () => {
     if (timer > 0 || resendLoading) return;
 
     try {
       const res = await resendOtp({ email }).unwrap();
-      if (res?.message) {
-        toast.success(res?.message);
-        setTimer(RESEND_DELAY);
-      }
+
+      toast.success(res?.message || "OTP sent");
+
+      setTimer(RESEND_DELAY);
     } catch (error: any) {
       toast.error(error?.data?.message);
     }
-  }, [timer, resendLoading, resendOtp]);
+  }, [timer, resendLoading, email]);
 
   return (
     <KeyboardAvoidingView
@@ -139,43 +140,51 @@ export default function OTPForm({ email, otp }: Props) {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        style={{ flex: 1 }}
+        contentContainerStyle={[
+          styles.scroll,
+          { minHeight: height }, // ✅ FULL SCREEN FIX
+        ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.card}>
-          <Text style={styles.title}>{t.title}</Text>
+        <View style={styles.wrapper}>
+          <View style={styles.card}>
+            {/* TITLE */}
+            <Text style={styles.title}>{t.title}</Text>
+            <Text style={styles.subtitle}>{t.subtitle}</Text>
 
-          <Text style={styles.subtitle}>{t.subtitle}</Text>
+            {/* FORM */}
+            <AppForm onSubmit={onSubmit}>
+              <OTPInput
+                name="code"
+                rules={{
+                  required: "OTP is required",
+                  pattern: {
+                    value: /^\d{6}$/,
+                    message: "OTP must be 6 digits",
+                  },
+                }}
+              />
 
-          <AppForm onSubmit={onSubmit}>
-            <OTPInput
-              name="code"
-              rules={{
-                required: "OTP is required",
-                pattern: {
-                  value: /^\d{6}$/,
-                  message: "OTP must be exactly 6 digits",
-                },
-              }}
-            />
+              <AppFormSubmit title={t.submit} isLoading={verifyLoading} />
 
-            <AppFormSubmit title={t.submit} isLoading={verifyLoading} />
-
-            <View style={styles.resendContainer}>
-              {timer > 0 ? (
-                <Text style={styles.timerText}>
-                  {t.resendIn} {timer}s
-                </Text>
-              ) : (
-                <Pressable onPress={handleResendOTP} disabled={resendLoading}>
-                  <Text style={styles.resendText}>
-                    {resendLoading ? t.sending : t.resend}
+              {/* RESEND */}
+              <View style={styles.resendContainer}>
+                {timer > 0 ? (
+                  <Text style={styles.timerText}>
+                    {t.resendIn} {timer}s
                   </Text>
-                </Pressable>
-              )}
-            </View>
-          </AppForm>
+                ) : (
+                  <Pressable onPress={handleResendOTP} disabled={resendLoading}>
+                    <Text style={styles.resendText}>
+                      {resendLoading ? t.sending : t.resend}
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            </AppForm>
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -190,7 +199,11 @@ const styles = StyleSheet.create({
 
   scroll: {
     flexGrow: 1,
-    justifyContent: "center",
+  },
+
+  wrapper: {
+    flex: 1,
+    justifyContent: "center", // ✅ safe centering
     padding: 24,
   },
 

@@ -6,12 +6,15 @@ import {
   Platform,
   ScrollView,
   Pressable,
+  useWindowDimensions,
 } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+
 import AppForm from "../AppForm";
 import AppTextInput from "../inputs/TextInput";
 import AppFormSubmit from "@/components/buttons/AppFormSubmit";
+
 import { Colors } from "@/theme/colors";
 import { FieldValues } from "react-hook-form";
 import { useForgotMutation } from "@/redux/features/auth/auth.api";
@@ -46,8 +49,8 @@ const translations = {
     errorMsg: "Fehler beim Senden des Codes",
   },
 };
-
 export default function ForgotForm() {
+  const { height } = useWindowDimensions();
   const [forgotPassword] = useForgotMutation();
   const lang = useAppSelector((state) => state.root.language.lang);
   const t = translations[lang];
@@ -55,20 +58,21 @@ export default function ForgotForm() {
   const onSubmit = async (data: FieldValues, reset: () => void) => {
     try {
       const res = await forgotPassword(data).unwrap();
-      if (res?.message) {
-        toast.info(res?.message);
-        reset();
-        router.push({
-          pathname: "/verify",
-          params: {
-            email: data.email,
-            otp: res?.data?.otp?.token,
-          },
-        });
-      }
+
+      console.log("forgot response:", res);
+      toast.info(res?.message || t.successMsg);
+
+      reset();
+
+      router.push({
+        pathname: "/verify",
+        params: {
+          email: data.email,
+          otp: res?.data?.otp?.token,
+        },
+      });
     } catch (error: any) {
-      console.log("FORGOT PASSWORD ERROR:", error);
-      toast.error(error?.message || t.errorMsg);
+      toast.error(error?.data?.message || t.errorMsg);
     }
   };
 
@@ -78,59 +82,65 @@ export default function ForgotForm() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        style={{ flex: 1 }}
+        contentContainerStyle={[
+          styles.scroll,
+          { minHeight: height }, // ✅ FULL SCREEN FIX
+        ]}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.card}>
-          {/* HEADER */}
-          <View style={styles.header}>
-            <View style={styles.iconBox}>
-              <Ionicons name="mail-outline" size={28} color="#fff" />
+        <View style={styles.wrapper}>
+          <View style={styles.card}>
+            {/* HEADER */}
+            <View style={styles.header}>
+              <View style={styles.iconBox}>
+                <Ionicons name="mail-outline" size={28} color="#fff" />
+              </View>
+
+              <Text style={styles.title}>{t.title}</Text>
+              <Text style={styles.subtitle}>{t.subtitle}</Text>
             </View>
 
-            <Text style={styles.title}>{t.title}</Text>
-            <Text style={styles.subtitle}>{t.subtitle}</Text>
+            {/* FORM */}
+            <AppForm defaultValues={{ email: "" }} onSubmit={onSubmit}>
+              <AppTextInput
+                name="email"
+                label={t.emailLabel}
+                placeholder={t.emailPlaceholder}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                leftIcon="mail-outline"
+                rules={{
+                  required: t.emailRequired,
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: t.emailInvalid,
+                  },
+                }}
+              />
+
+              <AppFormSubmit title={t.submit} />
+            </AppForm>
+
+            {/* BACK */}
+            <Pressable
+              onPress={() => router.push("/login")}
+              style={({ pressed }) => [
+                styles.backButton,
+                pressed && { opacity: 0.6 },
+              ]}
+            >
+              <Ionicons name="arrow-back" size={16} color="#6366f1" />
+              <Text style={styles.backText}>{t.backToLogin}</Text>
+            </Pressable>
           </View>
-
-          {/* FORM */}
-          <AppForm defaultValues={{ email: "" }} onSubmit={onSubmit}>
-            <AppTextInput
-              name="email"
-              label={t.emailLabel}
-              placeholder={t.emailPlaceholder}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              leftIcon="mail-outline"
-              rules={{
-                required: t.emailRequired,
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: t.emailInvalid,
-                },
-              }}
-            />
-
-            <AppFormSubmit title={t.submit} />
-          </AppForm>
-
-          {/* BACK BUTTON */}
-          <Pressable
-            onPress={() => router.push("/login")}
-            style={({ pressed }) => [
-              styles.backButton,
-              pressed && styles.pressed,
-            ]}
-          >
-            <Ionicons name="arrow-back" size={16} color="#6366f1" />
-            <Text style={styles.backText}>{t.backToLogin}</Text>
-          </Pressable>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-/** ---------------- STYLES ---------------- */
 const PRIMARY = "#4f46e5";
 
 const styles = StyleSheet.create({
@@ -141,7 +151,11 @@ const styles = StyleSheet.create({
 
   scroll: {
     flexGrow: 1,
-    justifyContent: "center",
+  },
+
+  wrapper: {
+    flex: 1,
+    justifyContent: "center", // ✅ safe centering
     padding: 24,
   },
 
@@ -199,9 +213,5 @@ const styles = StyleSheet.create({
     color: "#6366f1",
     fontSize: 14,
     fontWeight: "600",
-  },
-
-  pressed: {
-    opacity: 0.7,
   },
 });

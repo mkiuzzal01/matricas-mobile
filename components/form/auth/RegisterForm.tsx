@@ -1,12 +1,3 @@
-import AppFormSubmit from "@/components/buttons/AppFormSubmit";
-import SocialLogin from "@/components/shared/SocialLogin";
-import { useRegisterMutation } from "@/redux/features/auth/auth.api";
-import { Colors } from "@/theme/colors";
-import { toast } from "@/utils/toast";
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import React, { useMemo } from "react";
-import { FieldValues } from "react-hook-form";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -15,11 +6,23 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import React, { useMemo } from "react";
+import { FieldValues } from "react-hook-form";
+
 import AppForm from "../AppForm";
+import AppTextInput from "../inputs/TextInput";
 import DateInput from "../inputs/DateInput";
 import SelectInput from "../inputs/SelectInput";
-import AppTextInput from "../inputs/TextInput";
+import AppFormSubmit from "@/components/buttons/AppFormSubmit";
+import SocialLogin from "@/components/shared/SocialLogin";
+
+import { Colors } from "@/theme/colors";
+import { toast } from "@/utils/toast";
+import { useRegisterMutation } from "@/redux/features/auth/auth.api";
 import { useAppSelector } from "@/redux/hooks/appHook";
 
 const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
@@ -30,93 +33,87 @@ const GENDER_OPTIONS = [
 ];
 
 export default function RegisterForm() {
+  const { height } = useWindowDimensions();
   const lang = useAppSelector((state) => state.root.language.lang);
-  const [register, { isLoading }] = useRegisterMutation();
+  const [register] = useRegisterMutation();
 
-  const t = useMemo(
-    () =>
-      lang === "de"
-        ? {
-            title: "Konto erstellen",
-            subtitle: "Registrieren Sie sich, um fortzufahren",
+  const t = useMemo(() => {
+    return lang === "de"
+      ? {
+          title: "Konto erstellen",
+          subtitle: "Registrieren Sie sich",
 
-            nameLabel: "Name",
-            namePlaceholder: "John Doe",
-            nameRequired: "Name ist erforderlich",
+          nameLabel: "Name",
+          namePlaceholder: "John Doe",
+          nameRequired: "Name ist erforderlich",
 
-            emailLabel: "E-Mail-Adresse",
-            emailPlaceholder: "name@beispiel.de",
-            emailRequired: "E-Mail ist erforderlich",
-            emailInvalid: "Ungültige E-Mail-Adresse",
+          emailLabel: "E-Mail",
+          emailPlaceholder: "name@beispiel.de",
+          emailRequired: "E-Mail ist erforderlich",
+          emailInvalid: "Ungültige E-Mail",
 
-            genderLabel: "Geschlecht",
-            genderPlaceholder: "Geschlecht auswählen",
+          genderLabel: "Geschlecht",
+          genderPlaceholder: "Auswählen",
 
-            dobLabel: "Geburtsdatum",
-            dobPlaceholder: "Datum auswählen",
+          dobLabel: "Geburtsdatum",
+          dobPlaceholder: "Datum auswählen",
 
-            passwordLabel: "Passwort",
-            passwordPlaceholder: "••••••••",
-            passwordRequired: "Passwort ist erforderlich",
-            passwordMinLength: "Mindestens 6 Zeichen erforderlich",
+          passwordLabel: "Passwort",
+          passwordPlaceholder: "••••••••",
+          passwordRequired: "Passwort ist erforderlich",
+          passwordMinLength: "Mindestens 6 Zeichen",
 
-            submit: "Registrieren",
-            haveAccount: "Haben Sie bereits ein Konto?",
-            login: "Einloggen",
+          submit: "Registrieren",
+          haveAccount: "Schon ein Konto?",
+          login: "Einloggen",
+          orContinue: "Oder fortfahren mit",
+        }
+      : {
+          title: "Create Account",
+          subtitle: "Sign up to continue",
 
-            orContinue: "Oder fortfahren mit",
-          }
-        : {
-            title: "Create Account",
-            subtitle: "Sign up to start using Métricas",
+          nameLabel: "Full Name",
+          namePlaceholder: "John Doe",
+          nameRequired: "Name is required",
 
-            nameLabel: "Full Name",
-            namePlaceholder: "John Doe",
-            nameRequired: "Name is required",
+          emailLabel: "Email",
+          emailPlaceholder: "name@example.com",
+          emailRequired: "Email is required",
+          emailInvalid: "Invalid email",
 
-            emailLabel: "Email Address",
-            emailPlaceholder: "name@example.com",
-            emailRequired: "Email is required",
-            emailInvalid: "Invalid email address",
+          genderLabel: "Gender",
+          genderPlaceholder: "Select gender",
 
-            genderLabel: "Gender",
-            genderPlaceholder: "Select gender",
+          dobLabel: "Date of Birth",
+          dobPlaceholder: "Select date",
 
-            dobLabel: "Date of Birth",
-            dobPlaceholder: "Select date",
+          passwordLabel: "Password",
+          passwordPlaceholder: "••••••••",
+          passwordRequired: "Password is required",
+          passwordMinLength: "Min 6 characters",
 
-            passwordLabel: "Password",
-            passwordPlaceholder: "••••••••",
-            passwordRequired: "Password is required",
-            passwordMinLength: "Password must be at least 6 characters",
-
-            submit: "Sign Up",
-            haveAccount: "Already have an account?",
-            login: "Login",
-
-            orContinue: "Or continue with",
-          },
-    [lang],
-  );
+          submit: "Sign Up",
+          haveAccount: "Already have account?",
+          login: "Login",
+          orContinue: "Or continue with",
+        };
+  }, [lang]);
 
   const onSubmit = async (data: FieldValues, reset: () => void) => {
     try {
       const res = await register(data).unwrap();
 
-      const message = res?.message || "Account created successfully";
+      console.log("register response:", res);
 
-      toast.success(message);
-
+      toast.success(res?.message || "Account created");
       reset();
+
       router.push({
         pathname: "/verify",
         params: { email: data?.email },
       });
     } catch (error: any) {
-      const errorMessage =
-        error?.data?.message || error?.message || "Something went wrong";
-
-      toast.error(errorMessage);
+      toast.error(error?.data?.message || "Something went wrong");
     }
   };
 
@@ -126,90 +123,97 @@ export default function RegisterForm() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        style={{ flex: 1 }}
+        contentContainerStyle={[styles.scroll, { minHeight: height }]}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.card}>
-          <View style={styles.header}>
-            <View style={styles.iconBox}>
-              <Ionicons name="person-add" size={32} color="#fff" />
+        <View style={styles.wrapper}>
+          <View style={styles.card}>
+            {/* HEADER */}
+            <View style={styles.header}>
+              <View style={styles.iconBox}>
+                <Ionicons name="person-add" size={32} color="#fff" />
+              </View>
+              <Text style={styles.title}>{t.title}</Text>
+              <Text style={styles.subtitle}>{t.subtitle}</Text>
             </View>
-            <Text style={styles.title}>{t.title}</Text>
-            <Text style={styles.subtitle}>{t.subtitle}</Text>
-          </View>
-          <AppForm onSubmit={onSubmit}>
-            <AppTextInput
-              name="name"
-              label={t.nameLabel}
-              placeholder={t.namePlaceholder}
-              autoCapitalize="words"
-              leftIcon="person-outline"
-              rules={{
-                required: t.nameRequired,
-              }}
-            />
 
-            <AppTextInput
-              name="email"
-              label={t.emailLabel}
-              placeholder={t.emailPlaceholder}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              leftIcon="mail-outline"
-              rules={{
-                required: t.emailRequired,
-                pattern: {
-                  value: EMAIL_REGEX,
-                  message: t.emailInvalid,
-                },
-              }}
-            />
+            {/* FORM */}
+            <AppForm onSubmit={onSubmit}>
+              <AppTextInput
+                name="name"
+                label={t.nameLabel}
+                placeholder={t.namePlaceholder}
+                autoCapitalize="words"
+                leftIcon="person-outline"
+                rules={{ required: t.nameRequired }}
+              />
 
-            <SelectInput
-              name="gender"
-              label={t.genderLabel}
-              placeholder={t.genderPlaceholder}
-              options={GENDER_OPTIONS}
-            />
+              <AppTextInput
+                name="email"
+                label={t.emailLabel}
+                placeholder={t.emailPlaceholder}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                leftIcon="mail-outline"
+                rules={{
+                  required: t.emailRequired,
+                  pattern: {
+                    value: EMAIL_REGEX,
+                    message: t.emailInvalid,
+                  },
+                }}
+              />
 
-            <DateInput
-              name="d_o_b"
-              label={t.dobLabel}
-              placeholder={t.dobPlaceholder}
-            />
+              <SelectInput
+                name="gender"
+                label={t.genderLabel}
+                placeholder={t.genderPlaceholder}
+                options={GENDER_OPTIONS}
+              />
 
-            <AppTextInput
-              name="password"
-              label={t.passwordLabel}
-              placeholder={t.passwordPlaceholder}
-              secureTextEntry
-              autoCapitalize="none"
-              leftIcon="lock-closed-outline"
-              rules={{
-                required: t.passwordRequired,
-                minLength: {
-                  value: 6,
-                  message: t.passwordMinLength,
-                },
-              }}
-            />
+              <DateInput
+                name="d_o_b"
+                label={t.dobLabel}
+                placeholder={t.dobPlaceholder}
+              />
 
-            <AppFormSubmit title={t.submit} />
-          </AppForm>
+              <AppTextInput
+                name="password"
+                label={t.passwordLabel}
+                placeholder={t.passwordPlaceholder}
+                secureTextEntry
+                autoCapitalize="none"
+                leftIcon="lock-closed-outline"
+                rules={{
+                  required: t.passwordRequired,
+                  minLength: {
+                    value: 6,
+                    message: t.passwordMinLength,
+                  },
+                }}
+              />
 
-          <View style={styles.divider}>
-            <View style={styles.line} />
-            <Text style={styles.dividerText}>{t.orContinue}</Text>
-            <View style={styles.line} />
-          </View>
+              <AppFormSubmit title={t.submit} />
+            </AppForm>
 
-          <SocialLogin lang={lang} />
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>{t.haveAccount} </Text>
+            {/* DIVIDER */}
+            <View style={styles.divider}>
+              <View style={styles.line} />
+              <Text style={styles.dividerText}>{t.orContinue}</Text>
+              <View style={styles.line} />
+            </View>
 
-            <Pressable onPress={() => router.push("/login")}>
-              <Text style={styles.link}>{t.login}</Text>
-            </Pressable>
+            <SocialLogin lang={lang} />
+
+            {/* FOOTER */}
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>{t.haveAccount} </Text>
+              <Pressable onPress={() => router.push("/login")}>
+                <Text style={styles.link}>{t.login}</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -217,7 +221,6 @@ export default function RegisterForm() {
   );
 }
 
-/** ---------------- STYLES ---------------- */
 const PRIMARY = "#5a9e8e";
 
 const styles = StyleSheet.create({
@@ -228,13 +231,17 @@ const styles = StyleSheet.create({
 
   scroll: {
     flexGrow: 1,
+  },
+
+  wrapper: {
+    flex: 1,
     justifyContent: "center",
     padding: 24,
   },
 
   card: {
-    maxWidth: 420,
     width: "100%",
+    maxWidth: 420,
     alignSelf: "center",
     padding: 28,
     borderRadius: 16,

@@ -37,6 +37,8 @@ export default function Pricing() {
   const sections: Section[] = useMemo(() => {
     const plans = data?.data;
 
+    console.log("Plans Data:", plans);
+
     if (!plans) return [];
 
     return [
@@ -69,7 +71,6 @@ export default function Pricing() {
     [purchaseSubscription, isPurchasing],
   );
 
-  // ✅ Render plan card (optimized)
   const renderPlan = useCallback(
     ({ item }: { item: Plan }) => {
       return <PlanCard plan={item} onPress={() => handlePurchase(item)} />;

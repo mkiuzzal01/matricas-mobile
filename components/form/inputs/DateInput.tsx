@@ -1,23 +1,22 @@
+import { Colors } from "@/theme/colors";
+import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Platform,
-} from "react-native";
 import {
   Controller,
   FieldValues,
   Path,
-  useFormContext,
   RegisterOptions,
+  useFormContext,
 } from "react-hook-form";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { Ionicons } from "@expo/vector-icons";
-
-import { Colors } from "@/theme/colors";
+import {
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 /** ---------------- TYPES ---------------- */
 type Props<T extends FieldValues> = {
@@ -25,48 +24,70 @@ type Props<T extends FieldValues> = {
   label?: string;
   placeholder?: string;
   rules?: RegisterOptions<T, Path<T>>;
-  maxDate?: Date; // prevent future DOB
-  minDate?: Date; // optional restriction
+  maxDate?: Date;
+  minDate?: Date;
 };
 
 /** ---------------- COMPONENT ---------------- */
 export default function DateInput<T extends FieldValues>({
   name,
   label = "Date of Birth",
-  placeholder = "Select your date of birth",
+  placeholder = "Select date",
   rules,
-  maxDate = new Date(), // default: today (no future DOB)
+  maxDate = new Date(),
   minDate,
 }: Props<T>) {
   const { control } = useFormContext<T>();
 
   const [open, setOpen] = useState(false);
-  const [tempDate, setTempDate] = useState(new Date());
+  const [tempDate, setTempDate] = useState<Date>(new Date());
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-GB", {
+  const formatDate = (date: Date) =>
+    date.toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "short",
       year: "numeric",
     });
-  };
 
   return (
     <View style={styles.container}>
-      {/* LABEL */}
       {label && <Text style={styles.label}>{label}</Text>}
 
       <Controller
         control={control}
         name={name}
         rules={rules}
-        render={({ field: { value, onChange } }) => {
+        render={({ field: { value, onChange }, fieldState: { error } }) => {
           const selectedDate = value ? new Date(value) : null;
+
+          const openPicker = () => {
+            setTempDate(selectedDate ?? new Date());
+            setOpen(true);
+          };
+
+          /** ---------------- HANDLE CHANGE ---------------- */
+          const handleChange = (event: any, date?: Date) => {
+            // ANDROID BEHAVIOR
+            if (Platform.OS === "android") {
+              if (event.type === "set" && date) {
+                onChange(date);
+                setTempDate(date);
+              }
+              setOpen(false);
+              return;
+            }
+
+            // IOS BEHAVIOR (does not auto close)
+            if (date) setTempDate(date);
+          };
 
           return (
             <>
-              {/* TRIGGER */}
-              <Pressable onPress={() => setOpen(true)} style={styles.input}>
+              {/* INPUT */}
+              <Pressable
+                onPress={openPicker}
+                style={[styles.input, error ? styles.inputError : null]}
+              >
                 <View style={styles.row}>
                   <Ionicons
                     name="calendar-outline"
@@ -88,37 +109,46 @@ export default function DateInput<T extends FieldValues>({
                 />
               </Pressable>
 
+              {/* ERROR */}
+              {error?.message && (
+                <Text style={styles.errorText}>{error.message}</Text>
+              )}
+
               {/* MODAL */}
-              <Modal visible={open} transparent animationType="slide">
+              <Modal
+                visible={open}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setOpen(false)}
+              >
                 <View style={styles.overlay}>
                   <View style={styles.sheet}>
-                    {/* HEADER */}
-                    <View style={styles.header}>
-                      <Pressable onPress={() => setOpen(false)}>
-                        <Text style={styles.cancel}>Cancel</Text>
-                      </Pressable>
+                    {/* HEADER (iOS only useful) */}
+                    {Platform.OS === "ios" && (
+                      <View style={styles.header}>
+                        <Pressable onPress={() => setOpen(false)}>
+                          <Text style={styles.cancel}>Cancel</Text>
+                        </Pressable>
 
-                      <Pressable
-                        onPress={() => {
-                          onChange(tempDate);
-                          setOpen(false);
-                        }}
-                      >
-                        <Text style={styles.done}>Done</Text>
-                      </Pressable>
-                    </View>
+                        <Pressable
+                          onPress={() => {
+                            onChange(tempDate);
+                            setOpen(false);
+                          }}
+                        >
+                          <Text style={styles.done}>Done</Text>
+                        </Pressable>
+                      </View>
+                    )}
 
                     {/* PICKER */}
                     <DateTimePicker
-                      value={selectedDate || tempDate}
+                      value={tempDate}
                       mode="date"
                       display={Platform.OS === "ios" ? "spinner" : "calendar"}
                       maximumDate={maxDate}
                       minimumDate={minDate}
-                      onChange={(_, date) => {
-                        if (date) setTempDate(date);
-                      }}
-                      style={{ backgroundColor: Colors.dark.card }}
+                      onChange={handleChange}
                     />
                   </View>
                 </View>
@@ -130,9 +160,8 @@ export default function DateInput<T extends FieldValues>({
     </View>
   );
 }
-
 /** ---------------- STYLES ---------------- */
-const PRIMARY = "#4f46e5";
+const PRIMARY = "#5a9e8e";
 
 const styles = StyleSheet.create({
   container: {
@@ -157,6 +186,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
 
+  inputError: {
+    borderColor: "#ef4444",
+  },
+
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -170,6 +203,12 @@ const styles = StyleSheet.create({
 
   placeholder: {
     color: Colors.dark.mutedForeground,
+  },
+
+  errorText: {
+    marginTop: 4,
+    fontSize: 12,
+    color: "#ef4444",
   },
 
   overlay: {

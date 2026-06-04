@@ -1,18 +1,22 @@
-import React, { useMemo } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import AppLayout from "@/components/layouts/AppLayout";
-import { Colors } from "@/theme/colors";
-import { useAppSelector } from "@/redux/hooks/appHook";
-import { useGetSubscriptionsQuery } from "@/redux/features/subscription/subscription.api";
+import {
+  default as EmptyView,
+  default as ErrorView,
+} from "@/components/shared/EmptyView";
 import LoadingView from "@/components/shared/LoadingView";
-import ErrorView from "@/components/shared/EmptyView";
-import EmptyView from "@/components/shared/EmptyView";
+import { useGetSubscriptionsQuery } from "@/redux/features/subscription/subscription.api";
+import { useAppSelector } from "@/redux/hooks/appHook";
+import { Colors } from "@/theme/colors";
+import React, { useMemo } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function Subscription() {
   const lang = useAppSelector((state) => state.root.language.lang);
-  const { data, isLoading, error } = useGetSubscriptionsQuery();
+  const { data, isLoading, isError } = useGetSubscriptionsQuery();
 
   const subscription = data?.data;
+
+  console.log("Subscription Data:", subscription);
 
   const t = {
     en: {
@@ -35,21 +39,17 @@ export default function Subscription() {
     },
   }[lang];
 
-  // ✅ format date safely
   const formatDate = (date?: string) => {
     if (!date) return "-";
     return new Date(date).toLocaleDateString();
   };
 
-  // ✅ plan name fallback
   const planName = subscription?.plan?.name || t.noPlan;
 
-  // ✅ features (API safe fallback)
   const features = useMemo(() => {
     return subscription?.plan?.features ?? [];
   }, [subscription]);
 
-  // loading / error states
   if (isLoading) {
     return (
       <AppLayout>
@@ -58,7 +58,7 @@ export default function Subscription() {
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <AppLayout>
         <ErrorView message="Failed to load subscription" />

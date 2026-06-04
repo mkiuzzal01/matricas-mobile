@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -20,14 +21,8 @@ import { toast } from "@/utils/toast";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks/appHook";
 import { setUser } from "@/redux/features/auth/auth.slice";
 
-type LoginFormData = {
-  email: string;
-  password: string;
-};
-
-const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-
 export default function LoginForm() {
+  const { height } = useWindowDimensions();
   const dispatch = useAppDispatch();
   const lang = useAppSelector((state) => state.root.language.lang);
   const [login] = useLoginMutation();
@@ -36,7 +31,7 @@ export default function LoginForm() {
     lang === "de"
       ? {
           title: "Willkommen zurück",
-          subtitle: "Einloggen, um mit Métricas fortzufahren",
+          subtitle: "Einloggen, um fortzufahren",
           emailLabel: "E-Mail-Adresse",
           emailPlaceholder: "name@beispiel.de",
           emailRequired: "E-Mail ist erforderlich",
@@ -44,7 +39,7 @@ export default function LoginForm() {
           passwordLabel: "Passwort",
           passwordPlaceholder: "••••••••",
           passwordRequired: "Passwort ist erforderlich",
-          passwordMinLength: "Mindestens 6 Zeichen erforderlich",
+          passwordMinLength: "Mindestens 6 Zeichen",
           forgotPassword: "Passwort vergessen?",
           submit: "Einloggen",
           noAccount: "Kein Konto?",
@@ -53,15 +48,15 @@ export default function LoginForm() {
         }
       : {
           title: "Welcome Back",
-          subtitle: "Login to continue to Métricas",
+          subtitle: "Login to continue",
           emailLabel: "Email Address",
           emailPlaceholder: "name@example.com",
           emailRequired: "Email is required",
-          emailInvalid: "Invalid email address",
+          emailInvalid: "Invalid email",
           passwordLabel: "Password",
           passwordPlaceholder: "••••••••",
           passwordRequired: "Password is required",
-          passwordMinLength: "Password must be at least 6 characters",
+          passwordMinLength: "Min 6 characters",
           forgotPassword: "Forgot Password?",
           submit: "Login",
           noAccount: "Don't have an account?",
@@ -71,9 +66,13 @@ export default function LoginForm() {
 
   const onSubmit = async (data: FieldValues, reset: () => void) => {
     try {
-      const res = await login(data as LoginFormData).unwrap();
+      const res = await login(data as any).unwrap();
+
+      console.log("Login response:", res);
+
       if (res?.message) {
-        toast.info(res?.message);
+        toast.info(res.message);
+
         dispatch(
           setUser({
             user: res?.data?.user,
@@ -81,11 +80,12 @@ export default function LoginForm() {
             tokenType: res?.data?.token_type,
           }),
         );
+
         reset();
         router.replace("/home");
       }
-    } catch (error) {
-      console.log("LOGIN ERROR:", error);
+    } catch (error: any) {
+      toast.error(error?.data?.message || error?.message);
     }
   };
 
@@ -95,92 +95,92 @@ export default function LoginForm() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        style={{ flex: 1 }}
+        contentContainerStyle={[
+          styles.scroll,
+          { minHeight: height }, // ✅ FULL SCREEN FIX
+        ]}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.card}>
-          {/* HEADER */}
-          <View style={styles.header}>
-            <View style={styles.iconBox}>
-              <Ionicons name="trending-up" size={32} color="#fff" />
+        <View style={styles.wrapper}>
+          <View style={styles.card}>
+            {/* HEADER */}
+            <View style={styles.header}>
+              <View style={styles.iconBox}>
+                <Ionicons name="trending-up" size={32} color="#fff" />
+              </View>
+
+              <Text style={styles.title}>{t.title}</Text>
+              <Text style={styles.subtitle}>{t.subtitle}</Text>
             </View>
 
-            <Text style={styles.title}>{t.title}</Text>
-            <Text style={styles.subtitle}>{t.subtitle}</Text>
-          </View>
-
-          {/* FORM */}
-          <AppForm
-            defaultValues={{
-              email: "",
-              password: "",
-            }}
-            onSubmit={onSubmit}
-          >
-            <AppTextInput
-              name="email"
-              label={t.emailLabel}
-              placeholder={t.emailPlaceholder}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              leftIcon="mail-outline"
-              rules={{
-                required: t.emailRequired,
-                pattern: {
-                  value: EMAIL_REGEX,
-                  message: t.emailInvalid,
-                },
-              }}
-            />
-
-            <AppTextInput
-              name="password"
-              label={t.passwordLabel}
-              placeholder={t.passwordPlaceholder}
-              secureTextEntry
-              autoCapitalize="none"
-              leftIcon="lock-closed-outline"
-              rules={{
-                required: t.passwordRequired,
-                minLength: {
-                  value: 6,
-                  message: t.passwordMinLength,
-                },
-              }}
-            />
-
-            {/* FORGOT PASSWORD */}
-            <Pressable
-              onPress={() => router.push("/forgot")}
-              style={({ pressed }) => [
-                styles.forgot,
-                pressed && { opacity: 0.6 },
-              ]}
+            {/* FORM */}
+            <AppForm
+              defaultValues={{ email: "", password: "" }}
+              onSubmit={onSubmit}
             >
-              <Text style={styles.forgotText}>{t.forgotPassword}</Text>
-            </Pressable>
+              <AppTextInput
+                name="email"
+                label={t.emailLabel}
+                placeholder={t.emailPlaceholder}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                leftIcon="mail-outline"
+                rules={{
+                  required: t.emailRequired,
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: t.emailInvalid,
+                  },
+                }}
+              />
 
-            {/* SUBMIT */}
-            <AppFormSubmit title={t.submit} />
-          </AppForm>
+              <AppTextInput
+                name="password"
+                label={t.passwordLabel}
+                placeholder={t.passwordPlaceholder}
+                secureTextEntry
+                autoCapitalize="none"
+                leftIcon="lock-closed-outline"
+                rules={{
+                  required: t.passwordRequired,
+                  minLength: {
+                    value: 6,
+                    message: t.passwordMinLength,
+                  },
+                }}
+              />
 
-          {/* DIVIDER */}
-          <View style={styles.divider}>
-            <View style={styles.line} />
-            <Text style={styles.dividerText}>{t.orContinue}</Text>
-            <View style={styles.line} />
-          </View>
+              <Pressable
+                onPress={() => router.push("/forgot")}
+                style={({ pressed }) => [
+                  styles.forgot,
+                  pressed && { opacity: 0.6 },
+                ]}
+              >
+                <Text style={styles.forgotText}>{t.forgotPassword}</Text>
+              </Pressable>
 
-          {/* SOCIAL LOGIN */}
-          <SocialLogin lang={lang} />
+              <AppFormSubmit title={t.submit} />
+            </AppForm>
 
-          {/* FOOTER */}
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>{t.noAccount} </Text>
+            {/* DIVIDER */}
+            <View style={styles.divider}>
+              <View style={styles.line} />
+              <Text style={styles.dividerText}>{t.orContinue}</Text>
+              <View style={styles.line} />
+            </View>
 
-            <Pressable onPress={() => router.push("/register")}>
-              <Text style={styles.link}>{t.signUp}</Text>
-            </Pressable>
+            <SocialLogin lang={lang} />
+
+            {/* FOOTER */}
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>{t.noAccount} </Text>
+              <Pressable onPress={() => router.push("/register")}>
+                <Text style={styles.link}>{t.signUp}</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -188,24 +188,27 @@ export default function LoginForm() {
   );
 }
 
-/** ---------------- STYLES ---------------- */
 const PRIMARY = "#5a9e8e";
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1, // ✅ NEVER use height: "100%"
     backgroundColor: Colors.dark.background,
   },
 
   scroll: {
     flexGrow: 1,
-    justifyContent: "center",
+  },
+
+  wrapper: {
+    flex: 1,
+    justifyContent: "center", // ✅ center only wrapper, not scroll
     padding: 24,
   },
 
   card: {
-    maxWidth: 420,
     width: "100%",
+    maxWidth: 420,
     alignSelf: "center",
     padding: 28,
     borderRadius: 16,
