@@ -1,6 +1,6 @@
 import { combineReducers } from "@reduxjs/toolkit";
 
-import authReducer from "./slices/authSlice";
+import authReducer from "./features/auth/auth.slice";
 import languageReducer from "./slices/languageSlice";
 import surveyReducer from "./slices/surveySlice";
 
