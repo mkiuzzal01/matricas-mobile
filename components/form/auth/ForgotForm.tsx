@@ -13,10 +13,10 @@ import AppForm from "../AppForm";
 import AppTextInput from "../inputs/TextInput";
 import AppFormSubmit from "@/components/buttons/AppFormSubmit";
 import { Colors } from "@/theme/colors";
-import { useAppSelector } from "@/redux/hooks";
 import { FieldValues } from "react-hook-form";
 import { useForgotMutation } from "@/redux/features/auth/auth.api";
 import { toast } from "@/utils/toast";
+import { useAppSelector } from "@/redux/hooks/appHook";
 
 const translations = {
   en: {

@@ -3,7 +3,7 @@ import React from "react";
 import AppLayout from "../layouts/AppLayout";
 import { Colors } from "@/theme/colors";
 import { router } from "expo-router";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppSelector } from "@/redux/hooks/appHook";
 
 const translations = {
   en: {

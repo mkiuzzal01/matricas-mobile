@@ -3,12 +3,10 @@ import { View, Pressable, Text, StyleSheet } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { router } from "expo-router";
-
 import LanToggle from "../buttons/LanToggle";
 import AvatarDropdown from "../dropdown/User";
-
 import { Colors } from "@/theme/colors";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppSelector } from "@/redux/hooks/appHook";
 
 export default function Navbar() {
   const navigation = useNavigation();

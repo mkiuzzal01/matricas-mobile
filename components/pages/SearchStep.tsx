@@ -1,4 +1,3 @@
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { setSearchCity } from "@/redux/slices/surveySlice";
 import { Colors } from "@/theme/colors";
 import { useRouter } from "expo-router";
@@ -11,6 +10,7 @@ import {
   View,
 } from "react-native";
 import AppLayout from "../layouts/AppLayout";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks/appHook";
 
 const suggestions = [
   { id: "1", label: "München" },

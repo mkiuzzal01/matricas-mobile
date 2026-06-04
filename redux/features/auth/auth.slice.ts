@@ -2,31 +2,44 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export type TUser = {
   id: number;
+  name: string;
   email: string;
   role: string;
-  name?: string;
+
+  d_o_b?: string | null;
+  gender?: string;
+  phone?: string | null;
   avatar?: string | null;
+
+  login_type?: string;
+  choose_artist?: boolean;
+
+  is_premium?: boolean;
+  subscription_type?: string | null;
+
+  stripe_id?: string | null;
+  pm_type?: string | null;
+  pm_last_four?: string | null;
+
+  trial_ends_at?: string | null;
 };
 
 type AuthState = {
   user: TUser | null;
   token: string | null;
   tokenType: string;
-  expiresAt: string | null;
 };
 
 type LoginPayload = {
   user: TUser;
   token: string;
   tokenType?: string;
-  expiresAt?: string;
 };
 
 const initialState: AuthState = {
   user: null,
   token: null,
   tokenType: "Bearer",
-  expiresAt: null,
 };
 
 const authSlice = createSlice({
@@ -38,17 +51,25 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.tokenType = action.payload.tokenType ?? "Bearer";
-      state.expiresAt = action.payload.expiresAt ?? null;
+    },
+
+    updateUser: (state, action: PayloadAction<Partial<TUser>>) => {
+      if (state.user) {
+        state.user = {
+          ...state.user,
+          ...action.payload,
+        };
+      }
     },
 
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.tokenType = "Bearer";
-      state.expiresAt = null;
     },
   },
 });
 
-export const { setUser, logout } = authSlice.actions;
+export const { setUser, updateUser, logout } = authSlice.actions;
+
 export default authSlice.reducer;

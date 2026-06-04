@@ -1,7 +1,6 @@
 import AppFormSubmit from "@/components/buttons/AppFormSubmit";
 import SocialLogin from "@/components/shared/SocialLogin";
 import { useRegisterMutation } from "@/redux/features/auth/auth.api";
-import { useAppSelector } from "@/redux/hooks";
 import { Colors } from "@/theme/colors";
 import { toast } from "@/utils/toast";
 import { Ionicons } from "@expo/vector-icons";
@@ -21,6 +20,7 @@ import AppForm from "../AppForm";
 import DateInput from "../inputs/DateInput";
 import SelectInput from "../inputs/SelectInput";
 import AppTextInput from "../inputs/TextInput";
+import { useAppSelector } from "@/redux/hooks/appHook";
 
 const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 

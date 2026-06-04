@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Colors } from "@/theme/colors";
 import { useRouter } from "expo-router";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppSelector } from "@/redux/hooks/appHook";
 
 const translations = {
   en: {

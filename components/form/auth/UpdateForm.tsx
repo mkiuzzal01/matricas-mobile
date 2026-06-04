@@ -17,7 +17,7 @@ import AppTextInput from "../inputs/TextInput";
 import AppFormSubmit from "@/components/buttons/AppFormSubmit";
 import { Colors } from "@/theme/colors";
 import { FieldValues } from "react-hook-form";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppSelector } from "@/redux/hooks/appHook";
 
 const translations = {
   en: {
@@ -61,7 +61,7 @@ const translations = {
 };
 
 export default function UpdateForm() {
-  const lang = useAppSelector((state) => state.language.lang);
+  const lang = useAppSelector((state) => state.root.language.lang);
   const t = translations[lang];
 
   const handleBack = () => {

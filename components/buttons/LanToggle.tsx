@@ -1,4 +1,4 @@
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks/appHook";
 import { toggleLanguage } from "@/redux/slices/languageSlice";
 import { Colors } from "@/theme/colors";
 import React from "react";

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   Dimensions,
   Image,
@@ -8,10 +8,11 @@ import {
   Text,
   View,
 } from "react-native";
-import { Colors } from "@/theme/colors";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { useRouter } from "expo-router";
+import { Colors } from "@/theme/colors";
 import { logout } from "@/redux/features/auth/auth.slice";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks/appHook";
+import { useGetCurrentUserQuery } from "@/redux/features/auth/auth.api";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -31,89 +32,113 @@ const translations = {
 };
 
 export default function AvatarDropdown() {
-  const [visible, setVisible] = useState(false);
-  const [dropdownTop, setDropdownTop] = useState(0);
-  const [dropdownRight, setDropdownRight] = useState(16);
-  const avatarRef = useRef<View>(null);
   const router = useRouter();
   const dispatch = useAppDispatch();
 
+  const avatarRef = useRef<View>(null);
+
+  const [visible, setVisible] = useState(false);
+  const [position, setPosition] = useState({ top: 0, right: 16 });
+
   const lang = useAppSelector((state) => state.root.language.lang);
-  const { user } = useAppSelector((state) => state.root.auth);
+  const reduxUser = useAppSelector((state) => state.root.auth.user);
+
+  const { data, isLoading } = useGetCurrentUserQuery(null);
+
+  // ✅ single source of truth (API overrides redux)
+  const user = useMemo(() => {
+    return data?.data ?? reduxUser;
+  }, [data, reduxUser]);
+
   const t = translations[lang];
 
-  const handleLogout = () => {
+  // ---------- LOGOUT ----------
+  const handleLogout = useCallback(() => {
     dispatch(logout());
     router.replace("/(drawer)/home");
-  };
+  }, [dispatch, router]);
 
-  const toggleDropdown = () => {
-    if (!visible && avatarRef.current) {
-      avatarRef.current.measure((fx, fy, width, height, px, py) => {
-        setDropdownTop(py + height + 8); // Places menu exactly 8px below the avatar
-        setDropdownRight(SCREEN_WIDTH - (px + width)); // Aligns right border
-        setVisible(true);
-      });
-    } else {
+  // ---------- TOGGLE ----------
+  const toggleDropdown = useCallback(() => {
+    if (!avatarRef.current) return;
+
+    if (visible) {
       setVisible(false);
+      return;
     }
-  };
 
+    avatarRef.current.measure((fx, fy, width, height, px, py) => {
+      setPosition({
+        top: py + height + 8,
+        right: SCREEN_WIDTH - (px + width),
+      });
+      setVisible(true);
+    });
+  }, [visible]);
+
+  // ---------- MENU ----------
   const menuItems = useMemo(
     () => [
-      { label: t.profile, action: () => router.push("/(drawer)/Profile") },
+      {
+        label: t.profile,
+        action: () => router.push("/(drawer)/Profile"),
+      },
       {
         label: t.subscription,
         action: () => router.push("/(drawer)/subscription"),
       },
-      { label: t.settings, action: () => router.push("/(drawer)/settings") },
+      {
+        label: t.settings,
+        action: () => router.push("/(drawer)/settings"),
+      },
       {
         label: t.logout,
         action: handleLogout,
-        isDestructive: true,
+        destructive: true,
       },
     ],
-    [t, router],
+    [t, router, handleLogout],
   );
+
+  // ---------- AVATAR URL ----------
+  const avatarUrl = useMemo(() => {
+    if (user?.avatar) return user.avatar;
+
+    const name = encodeURIComponent(user?.name || "User");
+
+    return `https://ui-avatars.com/api/?name=${name}&background=6366f1&color=fff`;
+  }, [user]);
 
   return (
     <View ref={avatarRef} collapsable={false}>
+      {/* AVATAR */}
       <Pressable onPress={toggleDropdown} style={styles.avatarPressable}>
-        <Image
-          source={{
-            uri:
-              user?.avatar ||
-              "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
-          }}
-          style={styles.avatarImage}
-        />
+        <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
       </Pressable>
 
-      {/* Dropdown Menu Modal */}
+      {/* MODAL */}
       <Modal
         visible={visible}
         transparent
         animationType="fade"
         onRequestClose={() => setVisible(false)}
       >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setVisible(false)}
-        >
-          <View
-            style={[
-              styles.dropdownMenu,
-              { top: dropdownTop, right: dropdownRight },
-            ]}
-          >
-            <View style={styles.userInfoHeader}>
-              <Text style={styles.userName}>{user?.name || "Guest User"}</Text>
-              <Text style={styles.userEmail}>
+        <Pressable style={styles.overlay} onPress={() => setVisible(false)}>
+          <View style={[styles.dropdown, position]}>
+            {/* HEADER */}
+            <View style={styles.header}>
+              <Text style={styles.name}>{user?.name || "Guest User"}</Text>
+
+              <Text style={styles.email}>
                 {user?.email || "guest@example.com"}
               </Text>
+
+              {isLoading && <Text style={styles.loading}>Loading...</Text>}
             </View>
+
             <View style={styles.divider} />
 
+            {/* MENU */}
             {menuItems.map((item, index) => (
               <Pressable
                 key={index}
@@ -124,10 +149,7 @@ export default function AvatarDropdown() {
                 }}
               >
                 <Text
-                  style={[
-                    styles.menuItemText,
-                    item.isDestructive && styles.destructiveText,
-                  ]}
+                  style={[styles.menuText, item.destructive && styles.danger]}
                 >
                   {item.label}
                 </Text>
@@ -145,59 +167,74 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: "hidden",
   },
+
   avatarImage: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: "#333",
   },
-  modalOverlay: {
+
+  overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.35)",
   },
-  dropdownMenu: {
+
+  dropdown: {
     position: "absolute",
-    width: 200,
+    width: 220,
     backgroundColor: Colors.dark.card,
-    borderRadius: 8,
+    borderRadius: 12,
     paddingVertical: 8,
     borderWidth: 1,
     borderColor: Colors.dark.border,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowRadius: 10,
+    elevation: 8,
   },
-  userInfoHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+
+  header: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
   },
-  userName: {
+
+  name: {
     fontSize: 14,
     fontWeight: "600",
     color: Colors.dark.foreground,
   },
-  userEmail: {
+
+  email: {
     fontSize: 12,
     color: Colors.dark.mutedForeground,
     marginTop: 2,
   },
+
+  loading: {
+    fontSize: 11,
+    marginTop: 4,
+    color: "#999",
+  },
+
   divider: {
     height: 1,
     backgroundColor: Colors.dark.border,
     marginVertical: 6,
   },
+
   menuItem: {
     paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
   },
-  menuItemText: {
+
+  menuText: {
     fontSize: 14,
     color: Colors.dark.foreground,
   },
-  destructiveText: {
+
+  danger: {
     color: Colors.dark.destructive,
-    fontWeight: "500",
+    fontWeight: "600",
   },
 });

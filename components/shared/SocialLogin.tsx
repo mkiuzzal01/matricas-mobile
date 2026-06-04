@@ -1,61 +1,67 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import GoogleIcon from "@/assets/images/icons/Google";
 
 interface SocialLoginProps {
-  lang?: string;
+  lang?: "en" | "de";
+  loading?: boolean;
 }
 
-export default function SocialLogin({ lang = "en" }: SocialLoginProps) {
-  const handleSocialLogin = (platform: string) => {
-    Alert.alert(
-      "Social Login",
-      lang === "de"
-        ? `Anmeldung mit ${platform} wird in Kürze verfügbar sein.`
-        : `${platform} login will be available soon.`,
-    );
-  };
+export default function SocialLogin({
+  lang = "en",
+  loading = false,
+}: SocialLoginProps) {
+  const handleGoogleLogin = async () => {};
 
   return (
-    <View>
-      <View style={styles.socialContainer}>
-        <Pressable
-          onPress={() => handleSocialLogin("Google")}
-          style={({ pressed }) => [
-            styles.socialButton,
-            pressed && styles.socialButtonPressed,
-          ]}
-        >
-          <Ionicons name="logo-google" size={20} color="#EA4335" />
-          <Text style={styles.socialButtonText}>
-            {lang === "de" ? "Google" : "Google"}
-          </Text>
-        </Pressable>
-      </View>
+    <View style={styles.container}>
+      <Pressable
+        onPress={handleGoogleLogin}
+        disabled={loading}
+        style={({ pressed }) => [
+          styles.button,
+          pressed && styles.pressed,
+          loading && styles.disabled,
+        ]}
+      >
+        <GoogleIcon size={20} />
+
+        <Text style={styles.text}>
+          {loading ? (lang === "de" ? "Laden..." : "Loading...") : "Google"}
+        </Text>
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  socialContainer: {
+  container: {
     marginTop: 16,
   },
-  socialButton: {
+
+  button: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: 10,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
+    borderColor: "#2a2a2a",
+    borderRadius: 10,
+    backgroundColor: "#111",
   },
-  socialButtonPressed: {
+
+  pressed: {
     opacity: 0.7,
   },
-  socialButtonText: {
-    marginLeft: 8,
-    fontSize: 16,
-    color: "#ffffff",
-    fontWeight: "500",
+
+  disabled: {
+    opacity: 0.5,
+  },
+
+  text: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#fff",
   },
 });

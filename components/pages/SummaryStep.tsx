@@ -9,7 +9,7 @@ import {
 import Card from "../cards/Card";
 import AppLayout from "../layouts/AppLayout";
 import { router } from "expo-router";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppSelector } from "@/redux/hooks/appHook";
 
 // Dummy data for property valuation
 const dummyData = {

@@ -1,50 +1,50 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import AppLayout from '@/components/layouts/AppLayout';
-import { Colors } from '@/theme/colors';
-import { useAppSelector } from '@/redux/hooks';
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import AppLayout from "@/components/layouts/AppLayout";
+import { Colors } from "@/theme/colors";
+import { useAppSelector } from "@/redux/hooks/appHook";
 
 const translations = {
   en: {
-    title: 'Subscription Plan',
-    currentPlan: 'Current Plan',
-    proPlan: 'Pro Plan',
-    price: '€49.00 / month',
-    nextBillingDate: 'Next Renewal Date',
-    valueBillingDate: 'July 3rd, 2026',
-    paymentMethod: 'Payment Method',
-    cardEnding: 'Visa ending in 4242',
-    featuresTitle: 'Plan Inclusions',
+    title: "Subscription Plan",
+    currentPlan: "Current Plan",
+    proPlan: "Pro Plan",
+    price: "€49.00 / month",
+    nextBillingDate: "Next Renewal Date",
+    valueBillingDate: "July 3rd, 2026",
+    paymentMethod: "Payment Method",
+    cardEnding: "Visa ending in 4242",
+    featuresTitle: "Plan Inclusions",
     features: [
-      'Infinite automated valuations (AVM)',
-      'High-quality PDF downloads',
-      'Advanced AI market forecasts',
-      'Neighborhood infrastructure score breakdown',
+      "Infinite automated valuations (AVM)",
+      "High-quality PDF downloads",
+      "Advanced AI market forecasts",
+      "Neighborhood infrastructure score breakdown",
     ],
-    actionBtn: 'Manage Subscription',
+    actionBtn: "Manage Subscription",
   },
   de: {
-    title: 'Abonnement',
-    currentPlan: 'Aktueller Plan',
-    proPlan: 'Pro-Abonnement',
-    price: '49,00 € / Monat',
-    nextBillingDate: 'Nächstes Verlängerungsdatum',
-    valueBillingDate: '3. Juli 2026',
-    paymentMethod: 'Zahlungsmethode',
-    cardEnding: 'Visa mit Endung 4242',
-    featuresTitle: 'Abonnement-Leistungen',
+    title: "Abonnement",
+    currentPlan: "Aktueller Plan",
+    proPlan: "Pro-Abonnement",
+    price: "49,00 € / Monat",
+    nextBillingDate: "Nächstes Verlängerungsdatum",
+    valueBillingDate: "3. Juli 2026",
+    paymentMethod: "Zahlungsmethode",
+    cardEnding: "Visa mit Endung 4242",
+    featuresTitle: "Abonnement-Leistungen",
     features: [
-      'Unbegrenzte automatisierte Bewertungen (AVM)',
-      'Hochwertige PDF-Exporte und -Downloads',
-      'Erweiterte KI-Marktprognosen',
-      'Detaillierte Analyse des Lage-Infrastruktur-Scores',
+      "Unbegrenzte automatisierte Bewertungen (AVM)",
+      "Hochwertige PDF-Exporte und -Downloads",
+      "Erweiterte KI-Marktprognosen",
+      "Detaillierte Analyse des Lage-Infrastruktur-Scores",
     ],
-    actionBtn: 'Abonnement verwalten',
+    actionBtn: "Abonnement verwalten",
   },
 };
 
 export default function Subscription() {
-  const lang = useAppSelector((state) => state.language.lang);
+  const lang = useAppSelector((state) => state.root.language.lang);
   const t = translations[lang];
 
   return (
@@ -98,37 +98,37 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   pageTitle: {
-    color: '#5a9e8e',
+    color: "#5a9e8e",
     fontSize: 12,
     letterSpacing: 3,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     marginBottom: 20,
   },
   planCard: {
     backgroundColor: Colors.dark.card,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#5a9e8e', // highlight active plan with premium color border
+    borderColor: "#5a9e8e", // highlight active plan with premium color border
     padding: 20,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 20,
   },
   planLabel: {
     fontSize: 10,
     color: Colors.dark.mutedForeground,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 1,
   },
   planName: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.dark.foreground,
     marginTop: 8,
   },
   planPrice: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#5a9e8e',
+    fontWeight: "600",
+    color: "#5a9e8e",
     marginTop: 6,
   },
   detailsBox: {
@@ -140,11 +140,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomColor: "rgba(255,255,255,0.05)",
   },
   detailLabel: {
     fontSize: 12,
@@ -153,11 +153,11 @@ const styles = StyleSheet.create({
   detailValue: {
     fontSize: 13,
     color: Colors.dark.foreground,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   sectionTitle: {
     fontSize: 11,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     color: Colors.dark.mutedForeground,
     letterSpacing: 1.5,
     marginBottom: 8,
@@ -172,14 +172,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   featureItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     gap: 8,
   },
   bullet: {
     fontSize: 14,
-    color: '#5a9e8e',
-    fontWeight: 'bold',
+    color: "#5a9e8e",
+    fontWeight: "bold",
   },
   featureText: {
     fontSize: 13,
@@ -190,13 +190,13 @@ const styles = StyleSheet.create({
   primaryBtn: {
     paddingVertical: 14,
     borderRadius: 8,
-    backgroundColor: 'rgba(90,158,142,0.9)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "rgba(90,158,142,0.9)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   primaryText: {
-    color: '#080d12',
+    color: "#080d12",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

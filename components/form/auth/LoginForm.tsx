@@ -13,12 +13,12 @@ import AppForm from "../AppForm";
 import AppTextInput from "../inputs/TextInput";
 import AppFormSubmit from "@/components/buttons/AppFormSubmit";
 import SocialLogin from "@/components/shared/SocialLogin";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { Colors } from "@/theme/colors";
 import { useLoginMutation } from "@/redux/features/auth/auth.api";
 import { FieldValues } from "react-hook-form";
-import { setUser } from "@/redux/features/auth/auth.slice";
 import { toast } from "@/utils/toast";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks/appHook";
+import { setUser } from "@/redux/features/auth/auth.slice";
 
 type LoginFormData = {
   email: string;
@@ -74,8 +74,14 @@ export default function LoginForm() {
       const res = await login(data as LoginFormData).unwrap();
       if (res?.message) {
         toast.info(res?.message);
-        // dispatch(setUser(res.user));
-        // reset();
+        dispatch(
+          setUser({
+            user: res?.data?.user,
+            token: res?.data?.token,
+            tokenType: res?.data?.token_type,
+          }),
+        );
+        reset();
         router.replace("/home");
       }
     } catch (error) {

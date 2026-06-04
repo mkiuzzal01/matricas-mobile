@@ -19,11 +19,11 @@ import {
   useVerifyForgotOtpMutation,
   useVerifyOtpMutation,
 } from "@/redux/features/auth/auth.api";
-import { useAppSelector } from "@/redux/hooks";
 
 import { Colors } from "@/theme/colors";
 import { toast } from "@/utils/toast";
 import { FieldValues } from "react-hook-form";
+import { useAppSelector } from "@/redux/hooks/appHook";
 
 const RESEND_DELAY = 30;
 

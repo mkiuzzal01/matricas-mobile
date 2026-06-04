@@ -1,40 +1,40 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
-import AppLayout from '@/components/layouts/AppLayout';
-import { Colors } from '@/theme/colors';
-import { useAppSelector } from '@/redux/hooks';
+import React, { useState } from "react";
+import { View, Text, StyleSheet, Switch, TouchableOpacity } from "react-native";
+import AppLayout from "@/components/layouts/AppLayout";
+import { Colors } from "@/theme/colors";
+import { useAppSelector } from "@/redux/hooks/appHook";
 
 const translations = {
   en: {
-    title: 'Account Settings',
-    sectionGeneral: 'General Settings',
-    sectionPrivacy: 'Privacy & Security',
-    darkMode: 'Dark Mode',
-    pushNotifications: 'Push Notifications',
-    emailReports: 'Email Valuations',
-    biometricLogin: 'Face ID / Fingerprint',
-    offlineCache: 'Offline Cache',
-    privacyPolicy: 'Privacy Policy',
-    termsOfService: 'Terms of Service',
-    saveSettings: 'Save Settings',
+    title: "Account Settings",
+    sectionGeneral: "General Settings",
+    sectionPrivacy: "Privacy & Security",
+    darkMode: "Dark Mode",
+    pushNotifications: "Push Notifications",
+    emailReports: "Email Valuations",
+    biometricLogin: "Face ID / Fingerprint",
+    offlineCache: "Offline Cache",
+    privacyPolicy: "Privacy Policy",
+    termsOfService: "Terms of Service",
+    saveSettings: "Save Settings",
   },
   de: {
-    title: 'Kontoeinstellungen',
-    sectionGeneral: 'Allgemeine Einstellungen',
-    sectionPrivacy: 'Datenschutz & Sicherheit',
-    darkMode: 'Dunkelmodus',
-    pushNotifications: 'Push-Benachrichtigungen',
-    emailReports: 'E-Mail-Bewertungen',
-    biometricLogin: 'Biometrische Anmeldung',
-    offlineCache: 'Offline-Zwischenspeicher',
-    privacyPolicy: 'Datenschutzerklärung',
-    termsOfService: 'Nutzungsbedingungen',
-    saveSettings: 'Einstellungen speichern',
+    title: "Kontoeinstellungen",
+    sectionGeneral: "Allgemeine Einstellungen",
+    sectionPrivacy: "Datenschutz & Sicherheit",
+    darkMode: "Dunkelmodus",
+    pushNotifications: "Push-Benachrichtigungen",
+    emailReports: "E-Mail-Bewertungen",
+    biometricLogin: "Biometrische Anmeldung",
+    offlineCache: "Offline-Zwischenspeicher",
+    privacyPolicy: "Datenschutzerklärung",
+    termsOfService: "Nutzungsbedingungen",
+    saveSettings: "Einstellungen speichern",
   },
 };
 
 export default function Settings() {
-  const lang = useAppSelector((state) => state.language.lang);
+  const lang = useAppSelector((state) => state.root.language.lang);
   const t = translations[lang];
 
   const [push, setPush] = useState(true);
@@ -55,7 +55,7 @@ export default function Settings() {
             <Switch
               value={true}
               disabled
-              trackColor={{ false: '#767577', true: '#5a9e8e' }}
+              trackColor={{ false: "#767577", true: "#5a9e8e" }}
               thumbColor="#fff"
             />
           </View>
@@ -64,8 +64,8 @@ export default function Settings() {
             <Switch
               value={push}
               onValueChange={setPush}
-              trackColor={{ false: '#767577', true: '#5a9e8e' }}
-              thumbColor={push ? '#fff' : '#f4f3f4'}
+              trackColor={{ false: "#767577", true: "#5a9e8e" }}
+              thumbColor={push ? "#fff" : "#f4f3f4"}
             />
           </View>
           <View style={styles.row}>
@@ -73,8 +73,8 @@ export default function Settings() {
             <Switch
               value={email}
               onValueChange={setEmail}
-              trackColor={{ false: '#767577', true: '#5a9e8e' }}
-              thumbColor={email ? '#fff' : '#f4f3f4'}
+              trackColor={{ false: "#767577", true: "#5a9e8e" }}
+              thumbColor={email ? "#fff" : "#f4f3f4"}
             />
           </View>
           <View style={styles.row}>
@@ -82,8 +82,8 @@ export default function Settings() {
             <Switch
               value={cache}
               onValueChange={setCache}
-              trackColor={{ false: '#767577', true: '#5a9e8e' }}
-              thumbColor={cache ? '#fff' : '#f4f3f4'}
+              trackColor={{ false: "#767577", true: "#5a9e8e" }}
+              thumbColor={cache ? "#fff" : "#f4f3f4"}
             />
           </View>
         </View>
@@ -96,15 +96,17 @@ export default function Settings() {
             <Switch
               value={biometrics}
               onValueChange={setBiometrics}
-              trackColor={{ false: '#767577', true: '#5a9e8e' }}
-              thumbColor={biometrics ? '#fff' : '#f4f3f4'}
+              trackColor={{ false: "#767577", true: "#5a9e8e" }}
+              thumbColor={biometrics ? "#fff" : "#f4f3f4"}
             />
           </View>
           <TouchableOpacity style={styles.rowClickable}>
             <Text style={styles.labelClickable}>{t.privacyPolicy}</Text>
             <Text style={styles.arrow}>›</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.rowClickable, { borderBottomWidth: 0 }]}>
+          <TouchableOpacity
+            style={[styles.rowClickable, { borderBottomWidth: 0 }]}
+          >
             <Text style={styles.labelClickable}>{t.termsOfService}</Text>
             <Text style={styles.arrow}>›</Text>
           </TouchableOpacity>
@@ -126,15 +128,15 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   pageTitle: {
-    color: '#5a9e8e',
+    color: "#5a9e8e",
     fontSize: 12,
     letterSpacing: 3,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     marginBottom: 20,
   },
   sectionHeader: {
     fontSize: 11,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     color: Colors.dark.mutedForeground,
     letterSpacing: 1.5,
     marginBottom: 8,
@@ -149,30 +151,30 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomColor: "rgba(255,255,255,0.05)",
   },
   rowClickable: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomColor: "rgba(255,255,255,0.05)",
   },
   label: {
     fontSize: 13,
     color: Colors.dark.foreground,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   labelClickable: {
     fontSize: 13,
     color: Colors.dark.foreground,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   arrow: {
     fontSize: 18,
@@ -181,14 +183,14 @@ const styles = StyleSheet.create({
   primaryBtn: {
     paddingVertical: 14,
     borderRadius: 8,
-    backgroundColor: 'rgba(90,158,142,0.9)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "rgba(90,158,142,0.9)",
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 10,
   },
   primaryText: {
-    color: '#080d12',
+    color: "#080d12",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

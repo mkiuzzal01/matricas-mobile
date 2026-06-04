@@ -11,14 +11,13 @@ import {
   Text,
   View,
 } from "react-native";
-
 import AppFormSubmit from "@/components/buttons/AppFormSubmit";
-import { useAppSelector } from "@/redux/hooks";
 import { Colors } from "@/theme/colors";
 import AppForm from "../AppForm";
 import AppTextInput from "../inputs/TextInput";
 import { useResetPasswordMutation } from "@/redux/features/auth/auth.api";
 import { toast } from "@/utils/toast";
+import { useAppSelector } from "@/redux/hooks/appHook";
 
 const translations = {
   en: {
