@@ -1,88 +1,126 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import AppLayout from "@/components/layouts/AppLayout";
 import { Colors } from "@/theme/colors";
 import { useAppSelector } from "@/redux/hooks/appHook";
-
-const translations = {
-  en: {
-    title: "Subscription Plan",
-    currentPlan: "Current Plan",
-    proPlan: "Pro Plan",
-    price: "€49.00 / month",
-    nextBillingDate: "Next Renewal Date",
-    valueBillingDate: "July 3rd, 2026",
-    paymentMethod: "Payment Method",
-    cardEnding: "Visa ending in 4242",
-    featuresTitle: "Plan Inclusions",
-    features: [
-      "Infinite automated valuations (AVM)",
-      "High-quality PDF downloads",
-      "Advanced AI market forecasts",
-      "Neighborhood infrastructure score breakdown",
-    ],
-    actionBtn: "Manage Subscription",
-  },
-  de: {
-    title: "Abonnement",
-    currentPlan: "Aktueller Plan",
-    proPlan: "Pro-Abonnement",
-    price: "49,00 € / Monat",
-    nextBillingDate: "Nächstes Verlängerungsdatum",
-    valueBillingDate: "3. Juli 2026",
-    paymentMethod: "Zahlungsmethode",
-    cardEnding: "Visa mit Endung 4242",
-    featuresTitle: "Abonnement-Leistungen",
-    features: [
-      "Unbegrenzte automatisierte Bewertungen (AVM)",
-      "Hochwertige PDF-Exporte und -Downloads",
-      "Erweiterte KI-Marktprognosen",
-      "Detaillierte Analyse des Lage-Infrastruktur-Scores",
-    ],
-    actionBtn: "Abonnement verwalten",
-  },
-};
+import { useGetSubscriptionsQuery } from "@/redux/features/subscription/subscription.api";
+import LoadingView from "@/components/shared/LoadingView";
+import ErrorView from "@/components/shared/EmptyView";
+import EmptyView from "@/components/shared/EmptyView";
 
 export default function Subscription() {
   const lang = useAppSelector((state) => state.root.language.lang);
-  const t = translations[lang];
+  const { data, isLoading, error } = useGetSubscriptionsQuery();
+
+  const subscription = data?.data;
+
+  const t = {
+    en: {
+      title: "Subscription Plan",
+      currentPlan: "Current Plan",
+      nextBillingDate: "Next Renewal Date",
+      paymentMethod: "Payment Method",
+      featuresTitle: "Plan Inclusions",
+      actionBtn: "Manage Subscription",
+      noPlan: "No active subscription",
+    },
+    de: {
+      title: "Abonnement",
+      currentPlan: "Aktueller Plan",
+      nextBillingDate: "Nächstes Verlängerungsdatum",
+      paymentMethod: "Zahlungsmethode",
+      featuresTitle: "Leistungen",
+      actionBtn: "Abonnement verwalten",
+      noPlan: "Kein aktives Abonnement",
+    },
+  }[lang];
+
+  // ✅ format date safely
+  const formatDate = (date?: string) => {
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString();
+  };
+
+  // ✅ plan name fallback
+  const planName = subscription?.plan?.name || t.noPlan;
+
+  // ✅ features (API safe fallback)
+  const features = useMemo(() => {
+    return subscription?.plan?.features ?? [];
+  }, [subscription]);
+
+  // loading / error states
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <LoadingView />
+      </AppLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppLayout>
+        <ErrorView message="Failed to load subscription" />
+      </AppLayout>
+    );
+  }
+
+  if (!subscription) {
+    return (
+      <AppLayout>
+        <EmptyView message={t.noPlan} />
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
       <View style={styles.container}>
         <Text style={styles.pageTitle}>{t.title}</Text>
 
-        {/* PLAN OVERVIEW CARD */}
+        {/* PLAN CARD */}
         <View style={styles.planCard}>
           <Text style={styles.planLabel}>{t.currentPlan}</Text>
-          <Text style={styles.planName}>{t.proPlan}</Text>
-          <Text style={styles.planPrice}>{t.price}</Text>
+          <Text style={styles.planName}>{planName}</Text>
+
+          <Text style={styles.planPrice}>
+            {subscription.plan?.type?.toUpperCase()}
+          </Text>
         </View>
 
-        {/* DETAILS LIST */}
+        {/* DETAILS */}
         <View style={styles.detailsBox}>
           <View style={styles.row}>
             <Text style={styles.detailLabel}>{t.nextBillingDate}</Text>
-            <Text style={styles.detailValue}>{t.valueBillingDate}</Text>
+            <Text style={styles.detailValue}>
+              {formatDate(subscription.end_date)}
+            </Text>
           </View>
+
           <View style={[styles.row, { borderBottomWidth: 0 }]}>
-            <Text style={styles.detailLabel}>{t.paymentMethod}</Text>
-            <Text style={styles.detailValue}>{t.cardEnding}</Text>
+            <Text style={styles.detailLabel}>Status</Text>
+            <Text style={styles.detailValue}>{subscription.status}</Text>
           </View>
         </View>
 
-        {/* INCLUSIONS SECTION */}
+        {/* FEATURES */}
         <Text style={styles.sectionTitle}>{t.featuresTitle}</Text>
+
         <View style={styles.featuresBox}>
-          {t.features.map((feature, idx) => (
-            <View key={idx} style={styles.featureItem}>
-              <Text style={styles.bullet}>✓</Text>
-              <Text style={styles.featureText}>{feature}</Text>
-            </View>
-          ))}
+          {features.length > 0 ? (
+            features.map((feature: string, idx: number) => (
+              <View key={idx} style={styles.featureItem}>
+                <Text style={styles.bullet}>✓</Text>
+                <Text style={styles.featureText}>{feature}</Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.detailValue}>No features available</Text>
+          )}
         </View>
 
-        {/* ACTION BUTTON */}
+        {/* BUTTON */}
         <TouchableOpacity style={styles.primaryBtn} activeOpacity={0.8}>
           <Text style={styles.primaryText}>{t.actionBtn}</Text>
         </TouchableOpacity>
@@ -91,12 +129,21 @@ export default function Subscription() {
   );
 }
 
+/* ---------------- STYLES ---------------- */
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
     paddingVertical: 12,
   },
+
+  center: {
+    textAlign: "center",
+    marginTop: 20,
+    color: Colors.dark.mutedForeground,
+  },
+
   pageTitle: {
     color: "#5a9e8e",
     fontSize: 12,
@@ -104,33 +151,38 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     marginBottom: 20,
   },
+
   planCard: {
     backgroundColor: Colors.dark.card,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#5a9e8e", // highlight active plan with premium color border
+    borderColor: "#5a9e8e",
     padding: 20,
     alignItems: "center",
     marginBottom: 20,
   },
+
   planLabel: {
     fontSize: 10,
     color: Colors.dark.mutedForeground,
     textTransform: "uppercase",
-    letterSpacing: 1,
   },
+
   planName: {
-    fontSize: 22,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: "700",
     color: Colors.dark.foreground,
     marginTop: 8,
+    textAlign: "center",
   },
+
   planPrice: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "600",
     color: "#5a9e8e",
     marginTop: 6,
   },
+
   detailsBox: {
     backgroundColor: Colors.dark.card,
     borderRadius: 12,
@@ -139,6 +191,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 20,
   },
+
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -146,15 +199,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "rgba(255,255,255,0.05)",
   },
+
   detailLabel: {
     fontSize: 12,
     color: Colors.dark.mutedForeground,
   },
+
   detailValue: {
     fontSize: 13,
     color: Colors.dark.foreground,
     fontWeight: "500",
   },
+
   sectionTitle: {
     fontSize: 11,
     textTransform: "uppercase",
@@ -162,6 +218,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     marginBottom: 8,
   },
+
   featuresBox: {
     backgroundColor: Colors.dark.card,
     borderRadius: 12,
@@ -171,29 +228,32 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     gap: 12,
   },
+
   featureItem: {
     flexDirection: "row",
-    alignItems: "flex-start",
     gap: 8,
+    alignItems: "flex-start",
   },
+
   bullet: {
     fontSize: 14,
     color: "#5a9e8e",
     fontWeight: "bold",
   },
+
   featureText: {
     fontSize: 13,
     color: Colors.dark.foreground,
     flex: 1,
-    lineHeight: 18,
   },
+
   primaryBtn: {
     paddingVertical: 14,
     borderRadius: 8,
     backgroundColor: "rgba(90,158,142,0.9)",
     alignItems: "center",
-    justifyContent: "center",
   },
+
   primaryText: {
     color: "#080d12",
     fontSize: 12,

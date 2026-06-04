@@ -3,7 +3,7 @@ import { navigation } from "@/components/layouts/navigationLinks";
 import { Colors } from "@/theme/colors";
 
 export default function DrawerLayout() {
-  const theme = Colors.dark;
+  const theme = Colors.light;
 
   return (
     <Drawer

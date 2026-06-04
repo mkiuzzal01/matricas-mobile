@@ -4,6 +4,8 @@ import AppLayout from "@/components/layouts/AppLayout";
 import { Colors } from "@/theme/colors";
 import { useAppSelector } from "@/redux/hooks/appHook";
 import { useGetCurrentUserQuery } from "@/redux/features/auth/auth.api";
+import LoadingView from "@/components/shared/LoadingView";
+import ErrorView from "@/components/shared/EmptyView";
 
 const translations = {
   en: {
@@ -36,7 +38,7 @@ export default function Profile() {
   const lang = useAppSelector((state) => state.root.language.lang);
   const reduxUser = useAppSelector((state) => state.root.auth.user);
 
-  const { data } = useGetCurrentUserQuery(null);
+  const { data, isLoading, isError } = useGetCurrentUserQuery(null);
 
   // ✅ single source of truth
   const user = useMemo(() => {
@@ -53,6 +55,21 @@ export default function Profile() {
       user?.name || "User",
     )}&background=6366f1&color=fff`;
   }, [user]);
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <LoadingView />
+      </AppLayout>
+    );
+  }
+  if (isError) {
+    return (
+      <AppLayout>
+        <ErrorView />
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>

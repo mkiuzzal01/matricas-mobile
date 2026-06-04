@@ -79,6 +79,7 @@ export const authApi = baseApi.injectEndpoints({
         url: "/profile-info",
         method: "GET",
       }),
+      providesTags: ["profile-info"],
     }),
 
     logout: builder.mutation({

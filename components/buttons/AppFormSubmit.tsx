@@ -43,7 +43,7 @@ export default function AppFormSubmit<T extends FieldValues = FieldValues>({
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: "#4f46e5",
+    backgroundColor: "#5a9e8e",
     height: 48,
     borderRadius: 10,
     justifyContent: "center",

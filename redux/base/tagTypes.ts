@@ -3,4 +3,5 @@ export const tagTypes = [
   "profile-info",
   "my-subscription",
   "searchAddress",
+  "PricingPlans",
 ];

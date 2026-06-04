@@ -7,6 +7,7 @@ import {
 } from "@reduxjs/toolkit/query/react";
 
 import { RootState } from "../store";
+import { tagTypes } from "./tagTypes";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: process.env.EXPO_PUBLIC_BASE_URL,
@@ -33,6 +34,6 @@ const baseQueryWithRefreshToken: BaseQueryFn<
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: baseQueryWithRefreshToken,
-  tagTypes: [],
+  tagTypes: tagTypes,
   endpoints: () => ({}),
 });

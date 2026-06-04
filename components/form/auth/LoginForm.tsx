@@ -189,7 +189,7 @@ export default function LoginForm() {
 }
 
 /** ---------------- STYLES ---------------- */
-const PRIMARY = "#4f46e5";
+const PRIMARY = "#5a9e8e";
 
 const styles = StyleSheet.create({
   container: {

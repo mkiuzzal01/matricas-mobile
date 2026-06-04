@@ -81,7 +81,7 @@ export default function AvatarDropdown() {
     () => [
       {
         label: t.profile,
-        action: () => router.push("/(drawer)/Profile"),
+        action: () => router.push("/(drawer)/profile"),
       },
       {
         label: t.subscription,
