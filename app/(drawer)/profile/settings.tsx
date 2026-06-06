@@ -24,7 +24,6 @@ const translations = {
     offlineCache: "Offline Cache",
     privacyPolicy: "Privacy Policy",
     termsOfService: "Terms of Service",
-    saveSettings: "Save Settings",
     deleteAccount: "Delete Account",
     deleteDesc: "You can delete your account and all of your data",
     notifications: "Notifications",
@@ -39,7 +38,6 @@ const translations = {
     offlineCache: "Offline-Zwischenspeicher",
     privacyPolicy: "Datenschutzerklärung",
     termsOfService: "Nutzungsbedingungen",
-    saveSettings: "Einstellungen speichern",
     deleteAccount: "Konto löschen",
     deleteDesc: "Sie können Ihr Konto und alle Daten löschen",
     notifications: "Benachrichtigungen",
@@ -115,14 +113,6 @@ export default function Settings() {
             <Text style={styles.deleteText}>{t.deleteAccount}</Text>
           </Pressable>
         </View>
-
-        {/* SAVE */}
-        <TouchableOpacity
-          onPress={() => router.push("/profile/settings")}
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>{t.saveSettings}</Text>
-        </TouchableOpacity>
       </View>
     </AppLayout>
   );

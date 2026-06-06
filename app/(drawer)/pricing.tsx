@@ -10,6 +10,7 @@ import {
 import LoadingView from "@/components/shared/LoadingView";
 import ErrorView from "@/components/shared/ErrorView";
 import { toast } from "@/utils/toast";
+import { router, useLocalSearchParams } from "expo-router";
 
 type Plan = {
   id: number;
@@ -29,6 +30,7 @@ type Section = {
 };
 
 export default function Pricing() {
+  const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const { data, isLoading, error } = usePricingPlansQuery();
   const [purchaseSubscription, { isLoading: isPurchasing }] =
     usePurchaseSubscriptionMutation();
@@ -63,6 +65,9 @@ export default function Pricing() {
         }).unwrap();
         if (res?.message) {
           toast.success(res.message);
+        }
+        if (redirect === "search") {
+          router.push("/(drawer)/valuation/search");
         }
       } catch (error: any) {
         toast.error(error.data.message || "Failed to purchase plan");

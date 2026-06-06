@@ -106,6 +106,14 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ["profile-info"],
     }),
 
+    getNotification: builder.query({
+      query: () => ({
+        url: "/notifications",
+        method: "GET",
+      }),
+      providesTags: ["notifications"],
+    }),
+
     logout: builder.mutation({
       query: () => ({
         url: "/auth/logout",
@@ -136,4 +144,5 @@ export const {
   useUpdateProfileMutation,
   useChangePasswordMutation,
   useDeleteAccountMutation,
+  useGetNotificationQuery,
 } = authApi;

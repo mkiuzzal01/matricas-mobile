@@ -21,6 +21,7 @@ import {
 } from "@/redux/features/valuation/valuation.api";
 import { toast } from "@/utils/toast";
 import { setSearchCity } from "@/redux/slices/surveySlice";
+import { router } from "expo-router";
 
 const PRIMARY = "#5a9e8e";
 
@@ -52,9 +53,8 @@ export default function SearchStep() {
   const t = translations[lang];
   const valuations = data?.data ?? [];
 
-  // -------------------------
-  // Unique cities
-  // -------------------------
+  console.log(data);
+
   const cities = useMemo(() => {
     const map = new Map();
 
@@ -101,6 +101,10 @@ export default function SearchStep() {
         setReportId(res?.data?.id);
         console.log(res);
       } catch (err: any) {
+        console.log(err);
+        if (!err?.data?.status) {
+          router.push("/(drawer)/pricing?redirect=search");
+        }
         toast.error(err?.data?.message);
       }
     },

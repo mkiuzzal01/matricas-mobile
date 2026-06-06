@@ -77,6 +77,18 @@ export default function DrawerLayout() {
           drawerItemStyle: { display: "none" },
         }}
       />
+      <Drawer.Screen
+        name="profile/notifications"
+        options={{
+          drawerItemStyle: { display: "none" },
+        }}
+      />
+      <Drawer.Screen
+        name="profile/delete-account"
+        options={{
+          drawerItemStyle: { display: "none" },
+        }}
+      />
     </Drawer>
   );
 }
