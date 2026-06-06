@@ -1,107 +1,209 @@
-import { setSearchCity } from "@/redux/slices/surveySlice";
-import { Colors } from "@/theme/colors";
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import {
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
+  FlatList,
+  ActivityIndicator,
 } from "react-native";
-import AppLayout from "../layouts/AppLayout";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks/appHook";
+import { Ionicons } from "@expo/vector-icons";
 
-const suggestions = [
-  { id: "1", label: "München" },
-  { id: "2", label: "Berlin" },
-  { id: "3", label: "Hamburg" },
-  { id: "4", label: "Frankfurt" },
-  { id: "5", label: "Köln" },
-];
+import AppLayout from "../layouts/AppLayout";
+import SearchBar from "../shared/SearchBar";
+import AnalysisStep from "./AnalysisStep";
+
+import { Colors } from "@/theme/colors";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks/appHook";
+import {
+  useCreateValuationMutation,
+  useListValuationsQuery,
+} from "@/redux/features/valuation/valuation.api";
+import { toast } from "@/utils/toast";
+import { setSearchCity } from "@/redux/slices/surveySlice";
+
+const PRIMARY = "#5a9e8e";
 
 const translations = {
   en: {
     title: "Search Location",
-    placeholder: "Search address...",
-    examples: "Examples:",
+    loading: "Loading locations...",
+    noResults: "No results found",
+    recent: "Example: ",
   },
   de: {
     title: "Standort suchen",
-    placeholder: "Adresse suchen...",
-    examples: "Beispiele:",
+    loading: "Standorte werden geladen...",
+    noResults: "Keine Ergebnisse gefunden",
+    recent: "Beispiel: ",
   },
 };
 
 export default function SearchStep() {
-  const theme = Colors.dark;
-  const [query, setQuery] = useState("");
-  const router = useRouter();
   const dispatch = useAppDispatch();
   const lang = useAppSelector((state) => state.root.language.lang);
-  const text = translations[lang];
+  const [reportId, setReportId] = useState<number | null>(null);
+  const { data, isLoading } = useListValuationsQuery();
+  const [createValuation, { isLoading: creating, isSuccess, isError }] =
+    useCreateValuationMutation();
 
-  const handleNavigate = (city: string) => {
-    dispatch(setSearchCity(city));
-    router.push("/analysis");
-  };
+  const [query, setQuery] = useState("");
 
-  const filteredSuggestions =
-    query.trim().length > 0
-      ? suggestions.filter((item) =>
-          item.label.toLowerCase().includes(query.toLowerCase()),
-        )
-      : [];
+  const t = translations[lang];
+  const valuations = data?.data ?? [];
+
+  // -------------------------
+  // Unique cities
+  // -------------------------
+  const cities = useMemo(() => {
+    const map = new Map();
+
+    valuations.forEach((item: any) => {
+      if (!item?.city) return;
+
+      map.set(item.city.toLowerCase(), {
+        id: String(item.id),
+        city: item.city,
+        address: item.address,
+      });
+    });
+
+    return Array.from(map.values());
+  }, [valuations]);
+
+  // -------------------------
+  // Filter suggestions
+  // -------------------------
+  const filtered = useMemo(() => {
+    const search = query.trim().toLowerCase();
+    if (!search) return [];
+
+    return cities
+      .filter(
+        (i) =>
+          i.city.toLowerCase().includes(search) ||
+          i.address?.toLowerCase().includes(search),
+      )
+      .slice(0, 8);
+  }, [query, cities]);
+
+  // -------------------------
+  // SEARCH FLOW (IMPORTANT)
+  // -------------------------
+  const handleSearch = useCallback(
+    async (value: string) => {
+      const v = value.trim();
+      if (!v || creating) return;
+
+      dispatch(setSearchCity(v));
+      try {
+        const res = await createValuation({ address: v }).unwrap();
+        setReportId(res?.data?.id);
+        console.log(res);
+      } catch (err: any) {
+        toast.error(err?.data?.message);
+      }
+    },
+    [createValuation, creating],
+  );
+
+  if (creating && !reportId && !isSuccess && !isError) {
+    return (
+      <AppLayout>
+        <AnalysisStep
+          reportId={reportId}
+          isLoading={creating}
+          isSuccess={isSuccess}
+        />
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
-      <View style={[styles.container, { backgroundColor: theme.background }]}>
-        {/* TITLE */}
-        <Text style={styles.title}>{text.title}</Text>
+      <View style={styles.container}>
+        <Text style={styles.title}>{t.title}</Text>
 
-        {/* INPUT */}
-        <View style={styles.inputWrapper}>
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder={text.placeholder}
-            placeholderTextColor="#67829a"
-            style={styles.input}
-          />
-        </View>
+        {/* SEARCH BAR */}
+        <SearchBar
+          value={query}
+          placeholder="Search city or address..."
+          onChangeText={setQuery}
+          onSearch={handleSearch}
+        />
 
-        {/* SUGGESTIONS (ONLY WHEN TYPING) */}
-        {query.trim().length > 0 && filteredSuggestions.length > 0 && (
-          <View style={styles.suggestionList}>
-            {filteredSuggestions.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                activeOpacity={0.7}
-                onPress={() => handleNavigate(item.label)}
-                style={styles.suggestionItem}
-              >
-                <View style={styles.dot} />
-                <Text style={styles.suggestionText}>{item.label}</Text>
-              </TouchableOpacity>
-            ))}
+        {/* LOADING */}
+        {isLoading && (
+          <View style={styles.center}>
+            <ActivityIndicator color={PRIMARY} />
+            <Text style={styles.mutedText}>{t.loading}</Text>
           </View>
         )}
 
-        {/* EXAMPLES SECTION */}
-        <View style={styles.examplesWrapper}>
-          <Text style={styles.examplesLabel}>{text.examples}</Text>
+        {/* SUGGESTIONS */}
+        {!isLoading && filtered.length > 0 && (
+          <FlatList
+            data={filtered}
+            keyExtractor={(i) => i.id}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ paddingTop: 16 }}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.card}
+                onPress={() => {
+                  setQuery(item.city);
+                  handleSearch(item.city);
+                }}
+              >
+                <Ionicons name="location-outline" size={16} color={PRIMARY} />
 
-          {suggestions.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              onPress={() => handleNavigate(item.label)}
-              activeOpacity={0.7}
-              style={styles.chip}
-            >
-              <Text style={styles.chipText}>{item.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={styles.city}>{item.city}</Text>
+                  {!!item.address && (
+                    <Text style={styles.address}>{item.address}</Text>
+                  )}
+                </View>
+
+                <Ionicons
+                  name="chevron-forward"
+                  size={16}
+                  color={Colors.dark.mutedForeground}
+                />
+              </TouchableOpacity>
+            )}
+          />
+        )}
+
+        {/* NO RESULTS */}
+        {!isLoading && query.trim() && filtered.length === 0 && (
+          <View style={styles.center}>
+            <Ionicons
+              name="search-outline"
+              size={22}
+              color={Colors.dark.mutedForeground}
+            />
+            <Text style={styles.mutedText}>{t.noResults}</Text>
+          </View>
+        )}
+
+        {/* RECENT */}
+        {!query.trim() && cities.length > 0 && (
+          <View style={styles.recent}>
+            <Text style={styles.recentTitle}>{t.recent}</Text>
+
+            <View style={styles.chips}>
+              {cities.slice(0, 10).map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.chip}
+                  onPress={() => handleSearch(item.city)}
+                >
+                  <Text style={styles.chipText}>{item.city}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
       </View>
     </AppLayout>
   );
@@ -110,88 +212,109 @@ export default function SearchStep() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     padding: 20,
   },
 
   title: {
-    color: "#5a9e8e",
+    color: PRIMARY,
     fontSize: 12,
     letterSpacing: 3,
     textTransform: "uppercase",
     textAlign: "center",
-    marginBottom: 20,
+    marginBottom: 18,
+    opacity: 0.9,
   },
 
-  inputWrapper: {
-    backgroundColor: "#1a2937",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
-    paddingHorizontal: 12,
-  },
-
-  input: {
-    color: "#fff",
-    paddingVertical: 14,
-    fontSize: 15,
-  },
-
-  suggestionList: {
-    marginTop: 15,
-  },
-
-  suggestionItem: {
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: "rgba(255,255,255,0.05)",
-    marginBottom: 8,
+  // -------------------------
+  // CARD
+  // -------------------------
+  card: {
     flexDirection: "row",
     alignItems: "center",
+
+    backgroundColor: Colors.dark.card,
+    borderRadius: 14,
+
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+
+    marginBottom: 10,
+
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
 
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: "#5a9e8e",
-    marginRight: 10,
+  city: {
+    color: Colors.dark.foreground,
+    fontSize: 14,
+    fontWeight: "600",
   },
 
-  suggestionText: {
-    color: "#fff",
+  address: {
+    color: Colors.dark.mutedForeground,
+    fontSize: 12,
+    marginTop: 2,
+  },
+
+  // -------------------------
+  // CENTER STATE
+  // -------------------------
+  center: {
+    marginTop: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+
+  mutedText: {
+    color: Colors.dark.mutedForeground,
     fontSize: 13,
   },
 
-  examplesWrapper: {
-    marginTop: 25,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
+  // -------------------------
+  // RECENT SECTION
+  // -------------------------
+  recent: {
+    marginTop: 28,
   },
 
-  examplesLabel: {
-    fontSize: 10,
-    letterSpacing: 3,
+  recentTitle: {
+    fontSize: 11,
+    color: Colors.dark.mutedForeground,
     textTransform: "uppercase",
-    color: "#30455a",
-    marginRight: 6,
+    letterSpacing: 2,
+    marginBottom: 12,
+  },
+
+  chips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
 
   chip: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+
+    borderRadius: 999,
+
+    backgroundColor: Colors.dark.card,
+
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
-    marginRight: 6,
-    marginBottom: 6,
+    borderColor: Colors.dark.border,
+
+    marginRight: 8,
+    marginBottom: 8,
   },
 
   chipText: {
-    fontSize: 10,
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    color: "#30455a",
+    color: Colors.dark.foreground,
+    fontSize: 12,
+    fontWeight: "500",
   },
 });

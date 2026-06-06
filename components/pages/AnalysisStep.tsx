@@ -1,81 +1,196 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { View, Text, StyleSheet, Animated, Easing } from "react-native";
 import { Colors } from "@/theme/colors";
 import { useRouter } from "expo-router";
 import { useAppSelector } from "@/redux/hooks/appHook";
 
-const translations = {
-  en: {
-    title: "Analyzing Property...",
-    steps: [
-      { label: "Analyzing data", sub: "Processing location data" },
-      { label: "Calculating metrics", sub: "Running AI model" },
-      { label: "Generating report", sub: "Building insights" },
-      { label: "Finalizing", sub: "Preparing summary" },
-    ],
-  },
-  de: {
-    title: "Immobilie wird analysiert...",
-    steps: [
-      {
-        label: "Daten werden analysiert",
-        sub: "Verarbeitung von Standortdaten",
-      },
-      {
-        label: "Kennzahlen werden berechnet",
-        sub: "AI-Modell wird ausgeführt",
-      },
-      {
-        label: "Bericht wird generiert",
-        sub: "Erkenntnisse werden aufbereitet",
-      },
-      { label: "Abschließen", sub: "Zusammenfassung wird vorbereitet" },
-    ],
-  },
-};
+interface AnalysisStepProps {
+  isLoading: boolean;
+  isSuccess: boolean;
+  reportId: number | null;
+}
 
-export default function AnalysisStep() {
-  const theme = Colors.dark;
+export default function AnalysisStep({
+  isLoading,
+  isSuccess,
+  reportId,
+}: AnalysisStepProps) {
   const router = useRouter();
   const lang = useAppSelector((state) => state.root.language.lang);
-  const text = translations[lang];
+  const { searchCity } = useAppSelector((step) => step.root.survey);
+
+  console.log(
+    "isLoading",
+    isLoading,
+    "reportId",
+    reportId,
+    "isSuccess",
+    isSuccess,
+    "isError",
+  );
+  // -------------------------
+  // TRANSLATIONS
+  // -------------------------
+  const translations = useMemo(
+    () => ({
+      en: {
+        title: "Analyzing Property...",
+        steps: [
+          { label: "Analyzing data", sub: "Processing location data" },
+          { label: "Calculating metrics", sub: "Running AI model" },
+          { label: "Generating report", sub: "Building insights" },
+          { label: "Finalizing", sub: "Preparing summary" },
+        ],
+      },
+      de: {
+        title: "Immobilie wird analysiert...",
+        steps: [
+          {
+            label: "Daten werden analysiert",
+            sub: "Verarbeitung von Standortdaten",
+          },
+          {
+            label: "Kennzahlen werden berechnet",
+            sub: "AI-Modell wird ausgeführt",
+          },
+          {
+            label: "Bericht wird generiert",
+            sub: "Erkenntnisse werden aufbereitet",
+          },
+          { label: "Abschließen", sub: "Zusammenfassung wird vorbereitet" },
+        ],
+      },
+    }),
+    [],
+  );
+
+  const text = translations[lang] ?? translations.en;
   const steps = text.steps;
 
-  const handleResult = useCallback(() => {
-    router.replace("/result");
-  }, [router]);
+  const [step, setStep] = useState(0);
 
-  const [localStep, setLocalStep] = useState(0);
+  // -------------------------
+  // ANIMATION VALUES
+  // -------------------------
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const dotAnim = useRef(new Animated.Value(1)).current;
 
+  // -------------------------
+  // LOADER ANIMATION (PULSE + BREATHING DOT)
+  // -------------------------
   useEffect(() => {
-    if (localStep >= steps.length) {
-      handleResult();
-      return;
-    }
+    if (!isLoading || isSuccess) return;
+
+    // Pulse ring
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.3,
+          duration: 800,
+          useNativeDriver: true,
+          easing: Easing.inOut(Easing.ease),
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+
+    // Breathing dot
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(dotAnim, {
+          toValue: 0.4,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(dotAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+  }, [isLoading, isSuccess]);
+
+  // -------------------------
+  // STEP PROGRESSION
+  // -------------------------
+  useEffect(() => {
+    if (!isLoading || isSuccess) return;
+    if (step >= steps.length) return;
 
     const timer = setTimeout(() => {
-      setLocalStep((prev) => prev + 1);
+      setStep((prev) => prev + 1);
     }, 700);
 
     return () => clearTimeout(timer);
-  }, [localStep, steps.length, handleResult]);
+  }, [step, isLoading, isSuccess, steps.length]);
 
+  // -------------------------
+  // SUCCESS NAVIGATION
+  // -------------------------
+  useEffect(() => {
+    if (!isSuccess) return;
+    router.push({
+      pathname: "/result",
+      params: {
+        id: reportId,
+      },
+    });
+  }, [isSuccess, router, reportId]);
+
+  // -------------------------
+  // UI
+  // -------------------------
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <View style={styles.container}>
       {/* LOADER */}
       <View style={styles.loader}>
-        <View style={styles.loaderRing} />
-        <View style={styles.dot} />
+        <Animated.View
+          style={[
+            styles.loaderRing,
+            {
+              transform: [{ scale: pulseAnim }],
+              opacity: pulseAnim.interpolate({
+                inputRange: [1, 1.3],
+                outputRange: [0.4, 0.1],
+              }),
+            },
+          ]}
+        />
+
+        <Animated.View
+          style={[
+            styles.dot,
+            {
+              opacity: dotAnim,
+              transform: [
+                {
+                  scale: dotAnim.interpolate({
+                    inputRange: [0.4, 1],
+                    outputRange: [0.8, 1.2],
+                  }),
+                },
+              ],
+            },
+          ]}
+        />
       </View>
 
-      {/* STATUS */}
-      <Text style={styles.title}>{text.title}</Text>
+      {/* TITLE */}
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>{text.title}</Text>
+        <Text style={styles.subtitle}>{searchCity}</Text>
+      </View>
 
       {/* STEPS */}
       <View style={styles.steps}>
         {steps.map((s, i) => {
-          const active = i === localStep;
-          const done = i < localStep;
+          const active = i === step;
+          const done = i < step;
 
           return (
             <View
@@ -86,21 +201,18 @@ export default function AnalysisStep() {
                 done && styles.doneStep,
               ]}
             >
-              {/* dot */}
               <View
                 style={[
                   styles.stepDot,
-                  { backgroundColor: i <= localStep ? "#5a9e8e" : "#444" },
+                  { backgroundColor: i <= step ? "#5a9e8e" : "#444" },
                 ]}
               />
 
-              {/* text */}
               <View style={{ flex: 1 }}>
                 <Text style={styles.stepTitle}>{s.label}</Text>
                 <Text style={styles.stepSub}>{s.sub}</Text>
               </View>
 
-              {/* check */}
               {done && <Text style={styles.check}>✓</Text>}
             </View>
           );
@@ -116,14 +228,30 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
+    backgroundColor: Colors.dark.background,
   },
 
+  titleContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
+  title: {
+    color: "#ffffffaa",
+    fontSize: 14,
+  },
+
+  subtitle: {
+    color: "#ffffffaa",
+    fontSize: 14,
+    marginTop: 5,
+  },
   loader: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     borderWidth: 1,
-    borderColor: "rgba(90,158,142,0.4)",
+    borderColor: "rgba(90,158,142,0.25)",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 20,
@@ -131,27 +259,23 @@ const styles = StyleSheet.create({
 
   loaderRing: {
     position: "absolute",
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 1,
-    borderColor: "rgba(90,158,142,0.1)",
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 2,
+    borderColor: "rgba(90,158,142,0.12)",
   },
 
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: "#5a9e8e",
   },
 
-  title: {
-    color: "#ffffffaa",
-    fontSize: 14,
-    marginBottom: 25,
-    textAlign: "center",
-  },
-
+  // -------------------------
+  // STEPS
+  // -------------------------
   steps: {
     width: "100%",
     gap: 10,

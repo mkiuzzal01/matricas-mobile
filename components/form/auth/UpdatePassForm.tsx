@@ -18,7 +18,10 @@ import AppFormSubmit from "@/components/buttons/AppFormSubmit";
 
 import { Colors } from "@/theme/colors";
 import { FieldValues } from "react-hook-form";
-import { useAppSelector } from "@/redux/hooks/appHook";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks/appHook";
+import { useChangePasswordMutation } from "@/redux/features/auth/auth.api";
+import { toast } from "@/utils/toast";
+import { logout } from "@/redux/features/auth/auth.slice";
 
 const translations = {
   en: {
@@ -61,22 +64,28 @@ const translations = {
   },
 };
 
-export default function UpdateForm() {
+export default function UpdatePassForm() {
+  const dispatch = useAppDispatch();
   const { height } = useWindowDimensions();
   const lang = useAppSelector((state) => state.root.language.lang);
+  const [changePassword, { isLoading }] = useChangePasswordMutation();
   const t = translations[lang];
 
   const handleBack = () => {
     if (router.canGoBack()) router.back();
-    else router.replace("/(drawer)/settings");
+    else router.replace("/(drawer)/profile/user-info");
   };
 
   const onSubmit = async (data: FieldValues, reset: () => void) => {
     try {
-      console.log("UPDATE PASSWORD:", data);
+      await changePassword(data).unwrap();
+      toast.success(t.successMsg);
       reset();
-    } catch (e) {
-      console.log("ERROR:", e);
+      dispatch(logout());
+      router.push("/login");
+    } catch (error: any) {
+      toast.error(error.data.message);
+      console.error("Update password error:", error);
     }
   };
 
@@ -113,7 +122,7 @@ export default function UpdateForm() {
             <AppForm onSubmit={onSubmit}>
               <AppTextInput
                 label={t.currentPasswordLabel}
-                name="currentPassword"
+                name="current_password"
                 placeholder={t.currentPasswordPlaceholder}
                 leftIcon="lock-closed-outline"
                 secureTextEntry
@@ -137,7 +146,7 @@ export default function UpdateForm() {
 
               <AppTextInput
                 label={t.confirmPasswordLabel}
-                name="confirmPassword"
+                name="password_confirmation"
                 placeholder={t.confirmPasswordPlaceholder}
                 leftIcon="lock-closed-outline"
                 secureTextEntry

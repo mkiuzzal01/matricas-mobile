@@ -6,6 +6,7 @@ import { useAppSelector } from "@/redux/hooks/appHook";
 import { useGetCurrentUserQuery } from "@/redux/features/auth/auth.api";
 import LoadingView from "@/components/shared/LoadingView";
 import ErrorView from "@/components/shared/EmptyView";
+import { router } from "expo-router";
 
 const translations = {
   en: {
@@ -34,11 +35,13 @@ const translations = {
   },
 };
 
-export default function Profile() {
+export default function UserInfo() {
   const lang = useAppSelector((state) => state.root.language.lang);
   const reduxUser = useAppSelector((state) => state.root.auth.user);
 
   const { data, isLoading, isError } = useGetCurrentUserQuery(null);
+
+  console.log(data);
 
   // ✅ single source of truth
   const user = useMemo(() => {
@@ -46,6 +49,14 @@ export default function Profile() {
   }, [data, reduxUser]);
 
   const t = translations[lang];
+
+  const hanEditPress = () => {
+    router.push("/(drawer)/profile/edit-profile");
+  };
+
+  const hanChangePasswordPress = () => {
+    router.push("/(drawer)/profile/update-pass");
+  };
 
   // avatar fallback
   const avatar = useMemo(() => {
@@ -119,11 +130,14 @@ export default function Profile() {
 
         {/* ACTIONS */}
         <View style={styles.actionsContainer}>
-          <TouchableOpacity style={styles.primaryBtn}>
+          <TouchableOpacity onPress={hanEditPress} style={styles.primaryBtn}>
             <Text style={styles.primaryText}>{t.editProfile}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.secondaryBtn}>
+          <TouchableOpacity
+            onPress={hanChangePasswordPress}
+            style={styles.secondaryBtn}
+          >
             <Text style={styles.secondaryText}>{t.changePassword}</Text>
           </TouchableOpacity>
         </View>

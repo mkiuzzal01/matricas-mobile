@@ -15,7 +15,7 @@ export default function RootLayout() {
         <Stack.Screen name="register" />
         <Stack.Screen name="forgot" />
         <Stack.Screen name="reset" />
-        <Stack.Screen name="update-password" />
+        <Stack.Screen name="update" />
       </Stack>
 
       <Toast

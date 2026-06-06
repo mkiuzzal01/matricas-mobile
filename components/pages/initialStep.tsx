@@ -33,7 +33,11 @@ export default function InitialStep() {
   const text = translations[lang];
 
   const handleNavigate = () => {
-    router.push("/search");
+    router.push("/valuation/search");
+  };
+
+  const handleDemo = () => {
+    router.push("/valuation/demo");
   };
 
   return (
@@ -56,10 +60,7 @@ export default function InitialStep() {
             <Text style={styles.primaryButtonText}>{text.startBtn}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={handleNavigate}
-            style={styles.secondaryButton}
-          >
+          <TouchableOpacity onPress={handleDemo} style={styles.secondaryButton}>
             <Text style={styles.secondaryButtonText}>{text.demoBtn}</Text>
           </TouchableOpacity>
         </View>
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   primaryButton: {
-    backgroundColor: Colors.dark.primary,
+    backgroundColor: Colors.light.chart2,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,

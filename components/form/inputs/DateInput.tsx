@@ -61,6 +61,7 @@ export default function DateInput<T extends FieldValues>({
           const selectedDate = value ? new Date(value) : null;
 
           const openPicker = () => {
+            console.log('DateInput: openPicker called');
             setTempDate(selectedDate ?? new Date());
             setOpen(true);
           };
@@ -114,22 +115,20 @@ export default function DateInput<T extends FieldValues>({
                 <Text style={styles.errorText}>{error.message}</Text>
               )}
 
-              {/* MODAL */}
-              <Modal
-                visible={open}
-                transparent
-                animationType="slide"
-                onRequestClose={() => setOpen(false)}
-              >
-                <View style={styles.overlay}>
-                  <View style={styles.sheet}>
-                    {/* HEADER (iOS only useful) */}
-                    {Platform.OS === "ios" && (
+              {/* iOS modal picker */}
+              {Platform.OS === "ios" && (
+                <Modal
+                  visible={open}
+                  transparent
+                  animationType="slide"
+                  onRequestClose={() => setOpen(false)}
+                >
+                  <View style={styles.overlay}>
+                    <View style={styles.sheet}>
                       <View style={styles.header}>
                         <Pressable onPress={() => setOpen(false)}>
                           <Text style={styles.cancel}>Cancel</Text>
                         </Pressable>
-
                         <Pressable
                           onPress={() => {
                             onChange(tempDate);
@@ -139,20 +138,41 @@ export default function DateInput<T extends FieldValues>({
                           <Text style={styles.done}>Done</Text>
                         </Pressable>
                       </View>
-                    )}
-
-                    {/* PICKER */}
-                    <DateTimePicker
-                      value={tempDate}
-                      mode="date"
-                      display={Platform.OS === "ios" ? "spinner" : "calendar"}
-                      maximumDate={maxDate}
-                      minimumDate={minDate}
-                      onChange={handleChange}
-                    />
+                      <DateTimePicker
+                        value={tempDate}
+                        mode="date"
+                        display="spinner"
+                        maximumDate={maxDate}
+                        minimumDate={minDate}
+                        onChange={handleChange}
+                      />
+                    </View>
                   </View>
-                </View>
-              </Modal>
+                </Modal>
+              )}
+              {/* Android inline picker */}
+              {Platform.OS === "android" && open && (
+                <DateTimePicker
+                  value={tempDate}
+                  mode="date"
+                  display="calendar"
+                  maximumDate={maxDate}
+                  minimumDate={minDate}
+                  onChange={handleChange}
+                />
+              )}
+
+              {/* Web inline picker */}
+              {Platform.OS === "web" && open && (
+                <DateTimePicker
+                  value={tempDate}
+                  mode="date"
+                  display="calendar"
+                  maximumDate={maxDate}
+                  minimumDate={minDate}
+                  onChange={handleChange}
+                />
+              )}
             </>
           );
         }}

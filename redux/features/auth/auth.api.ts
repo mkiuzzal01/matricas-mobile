@@ -3,9 +3,17 @@ import { logout, setUser } from "./auth.slice";
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    register: builder.mutation({
+    register: builder.mutation<any, any>({
       query: (data) => ({
         url: "/register",
+        method: "POST",
+        body: data,
+      }),
+    }),
+
+    updateProfile: builder.mutation<any, any>({
+      query: (data: any) => ({
+        url: "/profile-update",
         method: "POST",
         body: data,
       }),
@@ -74,6 +82,22 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
+    changePassword: builder.mutation({
+      query: (data) => ({
+        url: "/change-password",
+        method: "POST",
+        body: data,
+      }),
+    }),
+
+    deleteAccount: builder.mutation({
+      query: (data) => ({
+        url: "/profile-delete",
+        method: "DELETE",
+        body: data,
+      }),
+    }),
+
     getCurrentUser: builder.query({
       query: () => ({
         url: "/profile-info",
@@ -109,4 +133,7 @@ export const {
   useForgotMutation,
   useVerifyForgotOtpMutation,
   useResetPasswordMutation,
+  useUpdateProfileMutation,
+  useChangePasswordMutation,
+  useDeleteAccountMutation,
 } = authApi;

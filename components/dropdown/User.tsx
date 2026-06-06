@@ -81,15 +81,15 @@ export default function AvatarDropdown() {
     () => [
       {
         label: t.profile,
-        action: () => router.push("/(drawer)/profile"),
+        action: () => router.push("/(drawer)/profile/user-info"),
       },
       {
         label: t.subscription,
-        action: () => router.push("/(drawer)/subscription"),
+        action: () => router.push("/(drawer)/profile/subscription"),
       },
       {
         label: t.settings,
-        action: () => router.push("/(drawer)/settings"),
+        action: () => router.push("/(drawer)/profile/settings"),
       },
       {
         label: t.logout,

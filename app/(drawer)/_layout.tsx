@@ -1,6 +1,6 @@
-import { Drawer } from "expo-router/drawer";
 import { navigation } from "@/components/layouts/navigationLinks";
 import { Colors } from "@/theme/colors";
+import { Drawer } from "expo-router/drawer";
 
 export default function DrawerLayout() {
   const theme = Colors.light;
@@ -14,7 +14,6 @@ export default function DrawerLayout() {
         },
       }}
     >
-      {/* Sidebar items */}
       {navigation.map((item) => (
         <Drawer.Screen
           key={item.route}
@@ -29,39 +28,51 @@ export default function DrawerLayout() {
         />
       ))}
 
-      {/* Hidden screens that still have drawer access */}
       <Drawer.Screen
-        name="search"
+        name="valuation/search"
         options={{
           drawerItemStyle: { display: "none" },
         }}
       />
       <Drawer.Screen
-        name="analysis"
+        name="valuation/demo"
         options={{
           drawerItemStyle: { display: "none" },
         }}
       />
       <Drawer.Screen
-        name="result"
+        name="valuation/result"
         options={{
           drawerItemStyle: { display: "none" },
         }}
       />
       <Drawer.Screen
-        name="profile"
+        name="profile/update-pass"
         options={{
           drawerItemStyle: { display: "none" },
         }}
       />
       <Drawer.Screen
-        name="settings"
+        name="profile/edit-profile"
+        options={{
+          drawerItemStyle: { display: "none" },
+        }}
+      />
+
+      <Drawer.Screen
+        name="profile/subscription"
         options={{
           drawerItemStyle: { display: "none" },
         }}
       />
       <Drawer.Screen
-        name="subscription"
+        name="profile/user-info"
+        options={{
+          drawerItemStyle: { display: "none" },
+        }}
+      />
+      <Drawer.Screen
+        name="profile/settings"
         options={{
           drawerItemStyle: { display: "none" },
         }}
