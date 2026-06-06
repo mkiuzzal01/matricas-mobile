@@ -1,4 +1,7 @@
+import { useValuationByIdQuery } from "@/redux/features/valuation/valuation.api";
+import { useAppSelector } from "@/redux/hooks/appHook";
 import { Colors } from "@/theme/colors";
+import { router } from "expo-router";
 import {
   ScrollView,
   StyleSheet,
@@ -8,11 +11,8 @@ import {
 } from "react-native";
 import Card from "../cards/Card";
 import AppLayout from "../layouts/AppLayout";
-import { router } from "expo-router";
-import { useAppSelector } from "@/redux/hooks/appHook";
-import { useValuationByIdQuery } from "@/redux/features/valuation/valuation.api";
-import LoadingView from "../shared/LoadingView";
 import ErrorView from "../shared/EmptyView";
+import LoadingView from "../shared/LoadingView";
 
 interface SummaryStepProps {
   reportId: number;
@@ -83,9 +83,6 @@ export default function SummaryStep({ reportId }: SummaryStepProps) {
 
   const d = data?.data;
 
-  // -------------------------
-  // SAFE HELPERS
-  // -------------------------
   const format = (v: any, suffix = "") =>
     v !== undefined && v !== null ? `${v}${suffix}` : "-";
 
@@ -94,7 +91,7 @@ export default function SummaryStep({ reportId }: SummaryStepProps) {
   const displayCity = searchCity || d?.city || "—";
 
   const handleStartEvaluation = () => {
-    router.replace("/search");
+    router.replace("/(drawer)/valuation/search");
   };
 
   if (isLoading)

@@ -1,59 +1,43 @@
-import React, { useMemo, useState, useCallback } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
+  FlatList,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  FlatList,
-  ActivityIndicator,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
 import AppLayout from "../layouts/AppLayout";
+import ErrorView from "../shared/EmptyView";
 import SearchBar from "../shared/SearchBar";
 import AnalysisStep from "./AnalysisStep";
 
-import { Colors } from "@/theme/colors";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks/appHook";
 import {
   useCreateValuationMutation,
   useListValuationsQuery,
 } from "@/redux/features/valuation/valuation.api";
-import { toast } from "@/utils/toast";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks/appHook";
 import { setSearchCity } from "@/redux/slices/surveySlice";
-import { router } from "expo-router";
+import { Colors } from "@/theme/colors";
+import { toast } from "@/utils/toast";
 
 const PRIMARY = "#5a9e8e";
-
-const translations = {
-  en: {
-    title: "Search Location",
-    loading: "Loading locations...",
-    noResults: "No results found",
-    recent: "Example: ",
-  },
-  de: {
-    title: "Standort suchen",
-    loading: "Standorte werden geladen...",
-    noResults: "Keine Ergebnisse gefunden",
-    recent: "Beispiel: ",
-  },
-};
 
 export default function SearchStep() {
   const dispatch = useAppDispatch();
   const lang = useAppSelector((state) => state.root.language.lang);
+
+  const [query, setQuery] = useState("");
   const [reportId, setReportId] = useState<number | null>(null);
+
   const { data, isLoading } = useListValuationsQuery();
   const [createValuation, { isLoading: creating, isSuccess, isError }] =
     useCreateValuationMutation();
 
-  const [query, setQuery] = useState("");
-
-  const t = translations[lang];
   const valuations = data?.data ?? [];
-
-  console.log(data);
 
   const cities = useMemo(() => {
     const map = new Map();
@@ -71,9 +55,6 @@ export default function SearchStep() {
     return Array.from(map.values());
   }, [valuations]);
 
-  // -------------------------
-  // Filter suggestions
-  // -------------------------
   const filtered = useMemo(() => {
     const search = query.trim().toLowerCase();
     if (!search) return [];
@@ -88,7 +69,7 @@ export default function SearchStep() {
   }, [query, cities]);
 
   // -------------------------
-  // SEARCH FLOW (IMPORTANT)
+  // SEARCH HANDLER
   // -------------------------
   const handleSearch = useCallback(
     async (value: string) => {
@@ -96,21 +77,37 @@ export default function SearchStep() {
       if (!v || creating) return;
 
       dispatch(setSearchCity(v));
+
       try {
         const res = await createValuation({ address: v }).unwrap();
         setReportId(res?.data?.id);
-        console.log(res);
       } catch (err: any) {
-        console.log(err);
+        toast.error(err?.data?.message || "Something went wrong");
+
+        // redirect to pricing if required
         if (!err?.data?.status) {
           router.push("/(drawer)/pricing?redirect=search");
         }
-        toast.error(err?.data?.message);
       }
     },
-    [createValuation, creating],
+    [creating, createValuation],
   );
 
+  // -------------------------
+  // SUCCESS REDIRECT
+  // -------------------------
+  useEffect(() => {
+    if (isSuccess && reportId) {
+      router.replace({
+        pathname: "/(drawer)/valuation/result",
+        params: { id: reportId },
+      });
+    }
+  }, [isSuccess, reportId]);
+
+  // -------------------------
+  // LOADING ANALYSIS SCREEN
+  // -------------------------
   if (creating && !reportId && !isSuccess && !isError) {
     return (
       <AppLayout>
@@ -123,12 +120,20 @@ export default function SearchStep() {
     );
   }
 
+  if (isError) {
+    return (
+      <AppLayout>
+        <ErrorView message="Error loading valuations" />
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <View style={styles.container}>
-        <Text style={styles.title}>{t.title}</Text>
+        <Text style={styles.title}>Search Location</Text>
 
-        {/* SEARCH BAR */}
+        {/* SEARCH */}
         <SearchBar
           value={query}
           placeholder="Search city or address..."
@@ -140,7 +145,7 @@ export default function SearchStep() {
         {isLoading && (
           <View style={styles.center}>
             <ActivityIndicator color={PRIMARY} />
-            <Text style={styles.mutedText}>{t.loading}</Text>
+            <Text style={styles.mutedText}>Loading...</Text>
           </View>
         )}
 
@@ -178,7 +183,7 @@ export default function SearchStep() {
           />
         )}
 
-        {/* NO RESULTS */}
+        {/* EMPTY */}
         {!isLoading && query.trim() && filtered.length === 0 && (
           <View style={styles.center}>
             <Ionicons
@@ -186,14 +191,14 @@ export default function SearchStep() {
               size={22}
               color={Colors.dark.mutedForeground}
             />
-            <Text style={styles.mutedText}>{t.noResults}</Text>
+            <Text style={styles.mutedText}>No results found</Text>
           </View>
         )}
 
         {/* RECENT */}
         {!query.trim() && cities.length > 0 && (
           <View style={styles.recent}>
-            <Text style={styles.recentTitle}>{t.recent}</Text>
+            <Text style={styles.recentTitle}>Recent</Text>
 
             <View style={styles.chips}>
               {cities.slice(0, 10).map((item) => (
@@ -213,6 +218,8 @@ export default function SearchStep() {
   );
 }
 
+/* ---------------- STYLES ---------------- */
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -226,32 +233,18 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     textAlign: "center",
     marginBottom: 18,
-    opacity: 0.9,
   },
 
-  // -------------------------
-  // CARD
-  // -------------------------
   card: {
     flexDirection: "row",
     alignItems: "center",
-
     backgroundColor: Colors.dark.card,
     borderRadius: 14,
-
     paddingVertical: 12,
     paddingHorizontal: 14,
-
     marginBottom: 10,
-
     borderWidth: 1,
     borderColor: Colors.dark.border,
-
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
   },
 
   city: {
@@ -266,13 +259,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  // -------------------------
-  // CENTER STATE
-  // -------------------------
   center: {
     marginTop: 30,
     alignItems: "center",
-    justifyContent: "center",
     gap: 6,
   },
 
@@ -281,9 +270,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 
-  // -------------------------
-  // RECENT SECTION
-  // -------------------------
   recent: {
     marginTop: 28,
   },
@@ -304,14 +290,10 @@ const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: 14,
     paddingVertical: 9,
-
     borderRadius: 999,
-
     backgroundColor: Colors.dark.card,
-
     borderWidth: 1,
     borderColor: Colors.dark.border,
-
     marginRight: 8,
     marginBottom: 8,
   },

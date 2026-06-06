@@ -86,7 +86,7 @@ export default function UpdateProfile() {
       appendIfExists("phone", values.phone);
       appendIfExists("email", values.email);
       appendIfExists("gender", values.gender);
-      appendIfExists("d_o_b", values.dob);
+      appendIfExists("dob", values.dob);
 
       // ✅ safer avatar handling
       if (values.avatar) {

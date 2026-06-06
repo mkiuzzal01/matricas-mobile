@@ -4,7 +4,7 @@ import { Colors } from "@/theme/colors";
 import { useRouter } from "expo-router";
 import { useAppSelector } from "@/redux/hooks/appHook";
 
-interface AnalysisStepProps {
+interface Props {
   isLoading: boolean;
   isSuccess: boolean;
   reportId: number | null;
@@ -14,23 +14,13 @@ export default function AnalysisStep({
   isLoading,
   isSuccess,
   reportId,
-}: AnalysisStepProps) {
+}: Props) {
   const router = useRouter();
-  const lang = useAppSelector((state) => state.root.language.lang);
-  const { searchCity } = useAppSelector((step) => step.root.survey);
+  const lang = useAppSelector((s) => s.root.language.lang);
+  const searchCity = useAppSelector((s) => s.root.survey.searchCity);
 
-  console.log(
-    "isLoading",
-    isLoading,
-    "reportId",
-    reportId,
-    "isSuccess",
-    isSuccess,
-    "isError",
-  );
-  // -------------------------
-  // TRANSLATIONS
-  // -------------------------
+  const hasNavigated = useRef(false);
+
   const translations = useMemo(
     () => ({
       en: {
@@ -45,116 +35,113 @@ export default function AnalysisStep({
       de: {
         title: "Immobilie wird analysiert...",
         steps: [
-          {
-            label: "Daten werden analysiert",
-            sub: "Verarbeitung von Standortdaten",
-          },
-          {
-            label: "Kennzahlen werden berechnet",
-            sub: "AI-Modell wird ausgeführt",
-          },
-          {
-            label: "Bericht wird generiert",
-            sub: "Erkenntnisse werden aufbereitet",
-          },
-          { label: "Abschließen", sub: "Zusammenfassung wird vorbereitet" },
+          { label: "Daten analysieren", sub: "Standortdaten verarbeiten" },
+          { label: "Berechnungen", sub: "AI-Modell läuft" },
+          { label: "Bericht erstellen", sub: "Erkenntnisse generieren" },
+          { label: "Fertigstellung", sub: "Zusammenfassung vorbereiten" },
         ],
       },
     }),
     [],
   );
 
-  const text = translations[lang] ?? translations.en;
-  const steps = text.steps;
+  const { title, steps } = translations[lang] ?? translations.en;
 
-  const [step, setStep] = useState(0);
+  const [activeStep, setActiveStep] = useState(0);
 
-  // -------------------------
-  // ANIMATION VALUES
-  // -------------------------
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const dotAnim = useRef(new Animated.Value(1)).current;
+  const pulse = useRef(new Animated.Value(1)).current;
+  const dot = useRef(new Animated.Value(1)).current;
 
-  // -------------------------
-  // LOADER ANIMATION (PULSE + BREATHING DOT)
-  // -------------------------
+  // ---------------- ANIMATION ----------------
   useEffect(() => {
     if (!isLoading || isSuccess) return;
 
-    // Pulse ring
-    Animated.loop(
+    const pulseAnim = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, {
+        Animated.timing(pulse, {
           toValue: 1.3,
           duration: 800,
-          useNativeDriver: true,
           easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
         }),
-        Animated.timing(pulseAnim, {
+        Animated.timing(pulse, {
           toValue: 1,
           duration: 800,
           useNativeDriver: true,
         }),
       ]),
-    ).start();
+    );
 
-    // Breathing dot
-    Animated.loop(
+    const dotAnim = Animated.loop(
       Animated.sequence([
-        Animated.timing(dotAnim, {
+        Animated.timing(dot, {
           toValue: 0.4,
           duration: 600,
           useNativeDriver: true,
         }),
-        Animated.timing(dotAnim, {
+        Animated.timing(dot, {
           toValue: 1,
           duration: 600,
           useNativeDriver: true,
         }),
       ]),
-    ).start();
+    );
+
+    pulseAnim.start();
+    dotAnim.start();
+
+    return () => {
+      pulseAnim.stop();
+      dotAnim.stop();
+    };
   }, [isLoading, isSuccess]);
 
-  // -------------------------
-  // STEP PROGRESSION
-  // -------------------------
+  // ---------------- STEP FLOW ----------------
   useEffect(() => {
     if (!isLoading || isSuccess) return;
-    if (step >= steps.length) return;
 
     const timer = setTimeout(() => {
-      setStep((prev) => prev + 1);
+      setActiveStep((prev) => {
+        if (prev < steps.length - 1) return prev + 1;
+        return prev;
+      });
     }, 700);
 
     return () => clearTimeout(timer);
-  }, [step, isLoading, isSuccess, steps.length]);
+  }, [activeStep, isLoading, isSuccess, steps.length]);
 
-  // -------------------------
-  // SUCCESS NAVIGATION
-  // -------------------------
+  // reset on new request
   useEffect(() => {
-    if (!isSuccess) return;
-    router.push({
-      pathname: "/result",
-      params: {
-        id: reportId,
-      },
-    });
-  }, [isSuccess, router, reportId]);
+    if (isLoading) {
+      setActiveStep(0);
+      hasNavigated.current = false;
+    }
+  }, [isLoading]);
 
-  // -------------------------
-  // UI
-  // -------------------------
+  // ---------------- NAVIGATION ----------------
+  useEffect(() => {
+    if (!isSuccess || hasNavigated.current) return;
+    if (!reportId) return;
+
+    hasNavigated.current = true;
+
+    router.replace({
+      pathname: "/valuation/result",
+      params: { id: reportId },
+    });
+  }, [isSuccess, reportId]);
+
+  // ---------------- UI ----------------
   return (
     <View style={styles.container}>
       {/* LOADER */}
       <View style={styles.loader}>
         <Animated.View
           style={[
-            styles.loaderRing,
+            styles.ring,
             {
-              transform: [{ scale: pulseAnim }],
-              opacity: pulseAnim.interpolate({
+              transform: [{ scale: pulse }],
+              opacity: pulse.interpolate({
                 inputRange: [1, 1.3],
                 outputRange: [0.4, 0.1],
               }),
@@ -166,10 +153,10 @@ export default function AnalysisStep({
           style={[
             styles.dot,
             {
-              opacity: dotAnim,
+              opacity: dot,
               transform: [
                 {
-                  scale: dotAnim.interpolate({
+                  scale: dot.interpolate({
                     inputRange: [0.4, 1],
                     outputRange: [0.8, 1.2],
                   }),
@@ -181,30 +168,28 @@ export default function AnalysisStep({
       </View>
 
       {/* TITLE */}
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>{text.title}</Text>
-        <Text style={styles.subtitle}>{searchCity}</Text>
-      </View>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.subtitle}>{searchCity}</Text>
 
       {/* STEPS */}
       <View style={styles.steps}>
         {steps.map((s, i) => {
-          const active = i === step;
-          const done = i < step;
+          const done = i < activeStep;
+          const active = i === activeStep;
 
           return (
             <View
               key={i}
               style={[
                 styles.step,
-                active && styles.activeStep,
-                done && styles.doneStep,
+                done && styles.done,
+                active && styles.active,
               ]}
             >
               <View
                 style={[
-                  styles.stepDot,
-                  { backgroundColor: i <= step ? "#5a9e8e" : "#444" },
+                  styles.dotSmall,
+                  { backgroundColor: i <= activeStep ? "#5a9e8e" : "#444" },
                 ]}
               />
 
@@ -221,7 +206,6 @@ export default function AnalysisStep({
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -231,21 +215,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.dark.background,
   },
 
-  titleContainer: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
-
-  title: {
-    color: "#ffffffaa",
-    fontSize: 14,
-  },
-
-  subtitle: {
-    color: "#ffffffaa",
-    fontSize: 14,
-    marginTop: 5,
-  },
   loader: {
     width: 70,
     height: 70,
@@ -257,7 +226,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 
-  loaderRing: {
+  ring: {
     position: "absolute",
     width: 90,
     height: 90,
@@ -273,9 +242,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#5a9e8e",
   },
 
-  // -------------------------
-  // STEPS
-  // -------------------------
+  title: {
+    color: "#fff",
+    fontSize: 14,
+  },
+
+  subtitle: {
+    color: "#aaa",
+    fontSize: 13,
+    marginBottom: 20,
+  },
+
   steps: {
     width: "100%",
     gap: 10,
@@ -289,16 +266,15 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.03)",
   },
 
-  activeStep: {
+  active: {
     backgroundColor: "rgba(255,255,255,0.06)",
-    transform: [{ scale: 1.02 }],
   },
 
-  doneStep: {
+  done: {
     opacity: 0.5,
   },
 
-  stepDot: {
+  dotSmall: {
     width: 6,
     height: 6,
     borderRadius: 3,
@@ -314,13 +290,11 @@ const styles = StyleSheet.create({
   stepSub: {
     color: "#888",
     fontSize: 10,
-    marginTop: 2,
   },
 
   check: {
     color: "#5a9e8e",
     fontSize: 14,
-    marginLeft: 10,
     fontWeight: "bold",
   },
 });

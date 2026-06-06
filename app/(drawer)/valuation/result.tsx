@@ -4,5 +4,6 @@ import SummaryStep from "@/components/pages/SummaryStep";
 
 export default function Result() {
   const { id } = useLocalSearchParams();
+
   return <SummaryStep reportId={Number(id)} />;
 }
