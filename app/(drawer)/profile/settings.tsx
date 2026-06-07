@@ -1,13 +1,5 @@
 import React, { useMemo, useState, useCallback } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Switch,
-  TouchableOpacity,
-  Pressable,
-  Alert,
-} from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import AppLayout from "@/components/layouts/AppLayout";
 import { Colors } from "@/theme/colors";
 import { useAppSelector } from "@/redux/hooks/appHook";
@@ -18,10 +10,6 @@ const translations = {
     title: "Account Settings",
     sectionGeneral: "General Settings",
     sectionPrivacy: "Privacy & Security",
-    darkMode: "Dark Mode",
-    pushNotifications: "Push Notifications",
-    emailReports: "Email Reports",
-    offlineCache: "Offline Cache",
     privacyPolicy: "Privacy Policy",
     termsOfService: "Terms of Service",
     deleteAccount: "Delete Account",
@@ -32,10 +20,6 @@ const translations = {
     title: "Kontoeinstellungen",
     sectionGeneral: "Allgemeine Einstellungen",
     sectionPrivacy: "Datenschutz & Sicherheit",
-    darkMode: "Dunkelmodus",
-    pushNotifications: "Push-Benachrichtigungen",
-    emailReports: "E-Mail-Bewertungen",
-    offlineCache: "Offline-Zwischenspeicher",
     privacyPolicy: "Datenschutzerklärung",
     termsOfService: "Nutzungsbedingungen",
     deleteAccount: "Konto löschen",
@@ -74,33 +58,17 @@ export default function Settings() {
               <Text style={styles.link}>Open</Text>
             </Pressable>
           </View>
-
-          <View style={styles.row}>
-            <Text style={styles.text}>{t.pushNotifications}</Text>
-            <Switch
-              value={settings.push}
-              onValueChange={() => toggle("push")}
-            />
-          </View>
-
-          <View style={styles.row}>
-            <Text style={styles.text}>{t.emailReports}</Text>
-            <Switch
-              value={settings.email}
-              onValueChange={() => toggle("email")}
-            />
-          </View>
         </View>
 
         {/* SECURITY */}
         <Text style={styles.section}>{t.sectionPrivacy}</Text>
 
         <View style={styles.card}>
-          <Pressable style={styles.row}>
+          <Pressable style={styles.row} onPress={() => router.push("/privacy")}>
             <Text style={styles.text}>{t.privacyPolicy}</Text>
           </Pressable>
 
-          <Pressable style={styles.row}>
+          <Pressable style={styles.row} onPress={() => router.push("/terms")}>
             <Text style={styles.text}>{t.termsOfService}</Text>
           </Pressable>
         </View>

@@ -36,6 +36,13 @@ export const valuationApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Valuation"],
     }),
+    generatePdf: builder.mutation<any, number>({
+      query: (id: number) => ({
+        url: `/valuation/report/${id}/pdf`,
+        method: "GET",
+        responseHandler: async (response) => response.blob(),
+      }),
+    }),
   }),
 });
 
@@ -43,4 +50,5 @@ export const {
   useListValuationsQuery,
   useCreateValuationMutation,
   useValuationByIdQuery,
+  useGeneratePdfMutation,
 } = valuationApi;

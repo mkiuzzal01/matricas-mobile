@@ -1,6 +1,10 @@
-import { useValuationByIdQuery } from "@/redux/features/valuation/valuation.api";
+import {
+  useGeneratePdfMutation,
+  useValuationByIdQuery,
+} from "@/redux/features/valuation/valuation.api";
 import { useAppSelector } from "@/redux/hooks/appHook";
 import { Colors } from "@/theme/colors";
+import { toast } from "@/utils/toast";
 import { router } from "expo-router";
 import {
   ScrollView,
@@ -23,6 +27,7 @@ export default function SummaryStep({ reportId }: SummaryStepProps) {
   const { data, isLoading, isError } = useValuationByIdQuery(reportId);
   const lang = useAppSelector((state) => state.root.language.lang);
   const searchCity = useAppSelector((state) => state.root.survey.searchCity);
+  const [generatePdf, { isLoading: isPdfLoading }] = useGeneratePdfMutation();
 
   const t = {
     en: {
@@ -92,6 +97,27 @@ export default function SummaryStep({ reportId }: SummaryStepProps) {
 
   const handleStartEvaluation = () => {
     router.replace("/(drawer)/valuation/search");
+  };
+
+  const handleDownloadPdf = async () => {
+    try {
+      const blob = await generatePdf(reportId).unwrap();
+
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `report_${reportId}.pdf`;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to generate PDF");
+    }
   };
 
   if (isLoading)
@@ -201,7 +227,11 @@ export default function SummaryStep({ reportId }: SummaryStepProps) {
 
       {/* ACTIONS */}
       <View style={styles.row}>
-        <TouchableOpacity activeOpacity={0.8} style={styles.primaryBtn}>
+        <TouchableOpacity
+          onPress={handleDownloadPdf}
+          activeOpacity={0.8}
+          style={styles.primaryBtn}
+        >
           <Text style={styles.primaryText}>{t.downloadPdf}</Text>
         </TouchableOpacity>
 
