@@ -29,62 +29,13 @@ export default function DrawerLayout() {
       ))}
 
       <Drawer.Screen
-        name="valuation/search"
+        name="valuation"
         options={{
           drawerItemStyle: { display: "none" },
         }}
       />
       <Drawer.Screen
-        name="valuation/demo"
-        options={{
-          drawerItemStyle: { display: "none" },
-        }}
-      />
-      <Drawer.Screen
-        name="valuation/result"
-        options={{
-          drawerItemStyle: { display: "none" },
-        }}
-      />
-      <Drawer.Screen
-        name="profile/update-pass"
-        options={{
-          drawerItemStyle: { display: "none" },
-        }}
-      />
-      <Drawer.Screen
-        name="profile/edit-profile"
-        options={{
-          drawerItemStyle: { display: "none" },
-        }}
-      />
-
-      <Drawer.Screen
-        name="profile/subscription"
-        options={{
-          drawerItemStyle: { display: "none" },
-        }}
-      />
-      <Drawer.Screen
-        name="profile/user-info"
-        options={{
-          drawerItemStyle: { display: "none" },
-        }}
-      />
-      <Drawer.Screen
-        name="profile/settings"
-        options={{
-          drawerItemStyle: { display: "none" },
-        }}
-      />
-      <Drawer.Screen
-        name="profile/notifications"
-        options={{
-          drawerItemStyle: { display: "none" },
-        }}
-      />
-      <Drawer.Screen
-        name="profile/delete-account"
+        name="profile"
         options={{
           drawerItemStyle: { display: "none" },
         }}

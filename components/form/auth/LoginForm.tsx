@@ -82,7 +82,7 @@ export default function LoginForm() {
         );
 
         reset();
-        router.replace("/home");
+        router.replace("/");
       }
     } catch (error: any) {
       toast.error(error?.data?.message || error?.message);

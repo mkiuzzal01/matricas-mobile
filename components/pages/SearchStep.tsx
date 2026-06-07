@@ -26,10 +26,13 @@ import { toast } from "@/utils/toast";
 
 const PRIMARY = "#5a9e8e";
 
-export default function SearchStep() {
-  const dispatch = useAppDispatch();
-  const lang = useAppSelector((state) => state.root.language.lang);
+interface SearchStepProps {
+  type?: "demo";
+}
 
+export default function SearchStep({ type }: SearchStepProps) {
+  const dispatch = useAppDispatch();
+  const [demoAnalysis, setDemoAnalysis] = useState(false);
   const [query, setQuery] = useState("");
   const [reportId, setReportId] = useState<number | null>(null);
 
@@ -78,6 +81,11 @@ export default function SearchStep() {
 
       dispatch(setSearchCity(v));
 
+      if (type === "demo") {
+        setDemoAnalysis(true);
+        return;
+      }
+
       try {
         const res = await createValuation({ address: v }).unwrap();
         setReportId(res?.data?.id);
@@ -103,7 +111,7 @@ export default function SearchStep() {
         params: { id: reportId },
       });
     }
-  }, [isSuccess, reportId]);
+  }, [type, isSuccess, reportId]);
 
   // -------------------------
   // LOADING ANALYSIS SCREEN
@@ -111,10 +119,24 @@ export default function SearchStep() {
   if (creating && !reportId && !isSuccess && !isError) {
     return (
       <AppLayout>
+        <AnalysisStep isLoading={creating} isSuccess={isSuccess} />
+      </AppLayout>
+    );
+  } else if (demoAnalysis) {
+    return (
+      <AppLayout>
         <AnalysisStep
-          reportId={reportId}
-          isLoading={creating}
-          isSuccess={isSuccess}
+          isLoading={true}
+          type="demo"
+          onFinish={() => {
+            setDemoAnalysis(false);
+            router.push({
+              pathname: "/(drawer)/valuation/result",
+              params: {
+                type: "demo",
+              },
+            });
+          }}
         />
       </AppLayout>
     );

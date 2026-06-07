@@ -6,7 +6,7 @@ export type TNavigation = {
 export const navigation: TNavigation[] = [
   {
     title: "Home",
-    route: "home",
+    route: "index",
   },
   {
     title: "Pricing",

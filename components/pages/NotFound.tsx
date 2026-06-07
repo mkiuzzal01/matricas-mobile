@@ -8,7 +8,7 @@ export default function NotFound() {
   const router = useRouter();
 
   const goHome = useCallback(() => {
-    router.replace("/home");
+    router.replace("/");
   }, [router]);
 
   return (

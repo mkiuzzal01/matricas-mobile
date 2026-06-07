@@ -39,6 +39,19 @@ export default function Navbar() {
 
       {/* Right Section */}
       <View style={styles.rightSection}>
+        {/* notification button */}
+        {token && (
+          <Pressable
+            onPress={() => router.push("/profile/notifications")}
+            style={({ pressed }) => [
+              styles.iconButton,
+              pressed && styles.pressed,
+            ]}
+          >
+            <AntDesign name="bell" size={24} color={Colors.dark.foreground} />
+          </Pressable>
+        )}
+
         <LanToggle />
 
         {token ? (

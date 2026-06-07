@@ -1,25 +1,28 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, StyleSheet, Animated, Easing } from "react-native";
 import { Colors } from "@/theme/colors";
-import { useRouter } from "expo-router";
 import { useAppSelector } from "@/redux/hooks/appHook";
 
 interface Props {
-  isLoading: boolean;
-  isSuccess: boolean;
-  reportId: number | null;
+  isLoading?: boolean;
+  isSuccess?: boolean;
+  type?: "demo";
+  onFinish?: () => void;
 }
 
 export default function AnalysisStep({
   isLoading,
   isSuccess,
-  reportId,
+  type,
+  onFinish,
 }: Props) {
-  const router = useRouter();
   const lang = useAppSelector((s) => s.root.language.lang);
   const searchCity = useAppSelector((s) => s.root.survey.searchCity);
 
-  const hasNavigated = useRef(false);
+  const isDemo = type === "demo";
+  const isActive = isLoading || isDemo;
+
+  const hasFinished = useRef(false);
 
   const translations = useMemo(
     () => ({
@@ -54,7 +57,7 @@ export default function AnalysisStep({
 
   // ---------------- ANIMATION ----------------
   useEffect(() => {
-    if (!isLoading || isSuccess) return;
+    if (!isActive || isSuccess) return;
 
     const pulseAnim = Animated.loop(
       Animated.sequence([
@@ -94,44 +97,44 @@ export default function AnalysisStep({
       pulseAnim.stop();
       dotAnim.stop();
     };
-  }, [isLoading, isSuccess]);
+  }, [isActive, isSuccess]);
 
   // ---------------- STEP FLOW ----------------
   useEffect(() => {
-    if (!isLoading || isSuccess) return;
+    if (!isActive || isSuccess) return;
 
     const timer = setTimeout(() => {
-      setActiveStep((prev) => {
-        if (prev < steps.length - 1) return prev + 1;
-        return prev;
-      });
+      setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
     }, 700);
 
     return () => clearTimeout(timer);
-  }, [activeStep, isLoading, isSuccess, steps.length]);
+  }, [activeStep, isActive, isSuccess, steps.length]);
 
-  // reset on new request
+  // ---------------- RESET ----------------
   useEffect(() => {
-    if (isLoading) {
+    if (isActive) {
       setActiveStep(0);
-      hasNavigated.current = false;
+      hasFinished.current = false;
     }
-  }, [isLoading]);
+  }, [isActive]);
 
-  // ---------------- NAVIGATION ----------------
+  // ---------------- FINAL + REDIRECT ----------------
   useEffect(() => {
-    if (!isSuccess || hasNavigated.current) return;
-    if (!reportId) return;
+    if (!isActive || hasFinished.current) return;
 
-    hasNavigated.current = true;
+    if (activeStep === steps.length - 1) {
+      hasFinished.current = true;
 
-    router.replace({
-      pathname: "/valuation/result",
-      params: { id: reportId },
-    });
-  }, [isSuccess, reportId]);
+      const delay = isDemo ? 900 : 500;
 
-  // ---------------- UI ----------------
+      const timer = setTimeout(() => {
+        onFinish?.();
+      }, delay);
+
+      return () => clearTimeout(timer);
+    }
+  }, [activeStep, isActive, isDemo, steps.length]);
+
   return (
     <View style={styles.container}>
       {/* LOADER */}
@@ -148,7 +151,6 @@ export default function AnalysisStep({
             },
           ]}
         />
-
         <Animated.View
           style={[
             styles.dot,
@@ -206,6 +208,7 @@ export default function AnalysisStep({
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

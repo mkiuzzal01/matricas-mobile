@@ -13,22 +13,36 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
 import Card from "../cards/Card";
 import AppLayout from "../layouts/AppLayout";
 import ErrorView from "../shared/EmptyView";
 import LoadingView from "../shared/LoadingView";
 
+import { demoValuation } from "@/app/(drawer)/valuation/demo_data";
+
 interface SummaryStepProps {
-  reportId: number;
+  reportId?: number;
+  type?: "demo";
 }
 
-export default function SummaryStep({ reportId }: SummaryStepProps) {
+export default function SummaryStep({ reportId, type }: SummaryStepProps) {
   const theme = Colors.dark;
-  const { data, isLoading, isError } = useValuationByIdQuery(reportId);
   const lang = useAppSelector((state) => state.root.language.lang);
   const searchCity = useAppSelector((state) => state.root.survey.searchCity);
+
+  const isDemo = type === "demo";
+
+  // ---------------- DATA FETCH ----------------
+  const { data, isLoading, isError } = useValuationByIdQuery(reportId!, {
+    skip: isDemo || !reportId,
+  });
+
   const [generatePdf, { isLoading: isPdfLoading }] = useGeneratePdfMutation();
 
+  const d = data?.data || demoValuation;
+
+  // ---------------- TRANSLATIONS ----------------
   const t = {
     en: {
       keyMetrics: "Key Metrics",
@@ -39,6 +53,7 @@ export default function SummaryStep({ reportId }: SummaryStepProps) {
       confidence: "Confidence",
       downloadPdf: "Download PDF",
       startEvaluation: "Start Again Evaluation",
+      pdfBlocked: "PDF not available in demo mode",
       metrics: {
         trend1y: "Trend 1Y",
         trend5y: "Trend 5Y",
@@ -66,6 +81,7 @@ export default function SummaryStep({ reportId }: SummaryStepProps) {
       confidence: "Konfidenz",
       downloadPdf: "PDF herunterladen",
       startEvaluation: "Neue Bewertung",
+      pdfBlocked: "PDF im Demo-Modus nicht verfügbar",
       metrics: {
         trend1y: "Trend 1J",
         trend5y: "Trend 5J",
@@ -86,8 +102,7 @@ export default function SummaryStep({ reportId }: SummaryStepProps) {
     },
   }[lang];
 
-  const d = data?.data;
-
+  // ---------------- HELPERS ----------------
   const format = (v: any, suffix = "") =>
     v !== undefined && v !== null ? `${v}${suffix}` : "-";
 
@@ -95,12 +110,23 @@ export default function SummaryStep({ reportId }: SummaryStepProps) {
 
   const displayCity = searchCity || d?.city || "—";
 
+  // ---------------- ACTIONS ----------------
   const handleStartEvaluation = () => {
-    router.replace("/(drawer)/valuation/search");
+    router.replace({
+      pathname: "/valuation/search",
+      params: { type: isDemo ? "demo" : undefined },
+    });
   };
 
   const handleDownloadPdf = async () => {
     try {
+      if (isDemo) {
+        toast.error(t.pdfBlocked);
+        return;
+      }
+
+      if (!reportId) return;
+
       const blob = await generatePdf(reportId).unwrap();
 
       const url = window.URL.createObjectURL(blob);
@@ -111,8 +137,8 @@ export default function SummaryStep({ reportId }: SummaryStepProps) {
 
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
 
+      document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error(error);
@@ -120,19 +146,24 @@ export default function SummaryStep({ reportId }: SummaryStepProps) {
     }
   };
 
-  if (isLoading)
+  // ---------------- LOADING / ERROR ----------------
+  if (!isDemo && isLoading) {
     return (
       <AppLayout>
         <LoadingView />
       </AppLayout>
     );
-  if (isError || !d)
+  }
+
+  if (!d || (!isDemo && isError)) {
     return (
       <AppLayout>
         <ErrorView />
       </AppLayout>
     );
+  }
 
+  // ---------------- UI ----------------
   return (
     <AppLayout>
       <ScrollView
@@ -227,13 +258,15 @@ export default function SummaryStep({ reportId }: SummaryStepProps) {
 
       {/* ACTIONS */}
       <View style={styles.row}>
-        <TouchableOpacity
-          onPress={handleDownloadPdf}
-          activeOpacity={0.8}
-          style={styles.primaryBtn}
-        >
-          <Text style={styles.primaryText}>{t.downloadPdf}</Text>
-        </TouchableOpacity>
+        {!isDemo && (
+          <TouchableOpacity
+            onPress={handleDownloadPdf}
+            activeOpacity={0.8}
+            style={styles.primaryBtn}
+          >
+            <Text style={styles.primaryText}>{t.downloadPdf}</Text>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity
           onPress={handleStartEvaluation}

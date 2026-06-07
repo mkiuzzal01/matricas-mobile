@@ -55,7 +55,7 @@ export default function AvatarDropdown() {
   // ---------- LOGOUT ----------
   const handleLogout = useCallback(() => {
     dispatch(logout());
-    router.replace("/(drawer)/home");
+    router.replace("/");
   }, [dispatch, router]);
 
   // ---------- TOGGLE ----------

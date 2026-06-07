@@ -25,7 +25,6 @@ export default function Subscription() {
       nextBillingDate: "Next Renewal Date",
       paymentMethod: "Payment Method",
       featuresTitle: "Plan Inclusions",
-      actionBtn: "Manage Subscription",
       noPlan: "No active subscription",
     },
     de: {
@@ -34,7 +33,6 @@ export default function Subscription() {
       nextBillingDate: "Nächstes Verlängerungsdatum",
       paymentMethod: "Zahlungsmethode",
       featuresTitle: "Leistungen",
-      actionBtn: "Abonnement verwalten",
       noPlan: "Kein aktives Abonnement",
     },
   }[lang];
@@ -119,11 +117,6 @@ export default function Subscription() {
             <Text style={styles.detailValue}>No features available</Text>
           )}
         </View>
-
-        {/* BUTTON */}
-        <TouchableOpacity style={styles.primaryBtn} activeOpacity={0.8}>
-          <Text style={styles.primaryText}>{t.actionBtn}</Text>
-        </TouchableOpacity>
       </View>
     </AppLayout>
   );
