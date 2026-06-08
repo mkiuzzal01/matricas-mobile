@@ -1,24 +1,47 @@
 import React, { useCallback } from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  useWindowDimensions,
+} from "react-native";
 import { useRouter } from "expo-router";
 
 import { Colors } from "@/theme/colors";
 
 export default function NotFound() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
 
   const goHome = useCallback(() => {
     router.replace("/");
   }, [router]);
 
+  const isSmallScreen = width < 400;
+
   return (
     <View style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>404</Text>
+      <View
+        style={[
+          styles.content,
+          {
+            maxWidth: 500,
+            width: "100%",
+          },
+        ]}
+      >
+        <Text style={[styles.title, { fontSize: isSmallScreen ? 64 : 96 }]}>
+          404
+        </Text>
 
-        <Text style={styles.subtitle}>Page Not Found</Text>
+        <Text style={[styles.subtitle, { fontSize: isSmallScreen ? 18 : 24 }]}>
+          Page Not Found
+        </Text>
 
-        <Text style={styles.description}>
+        <Text
+          style={[styles.description, { fontSize: isSmallScreen ? 14 : 16 }]}
+        >
           The page you are looking for doesn’t exist or has been moved.
         </Text>
 
@@ -42,42 +65,43 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.dark.background,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 32,
   },
 
   content: {
     alignItems: "center",
-    maxWidth: 400,
   },
 
   title: {
-    fontSize: 84,
     fontWeight: "800",
     color: Colors.dark.primary,
-    letterSpacing: 2,
+    textAlign: "center",
   },
 
   subtitle: {
-    fontSize: 20,
     fontWeight: "600",
     color: Colors.dark.foreground,
     marginTop: 8,
+    textAlign: "center",
   },
 
   description: {
-    fontSize: 14,
     color: Colors.dark.mutedForeground,
     textAlign: "center",
-    marginTop: 10,
-    marginBottom: 28,
-    lineHeight: 20,
+    marginTop: 12,
+    marginBottom: 32,
+    lineHeight: 24,
+    maxWidth: 420,
   },
 
   button: {
     backgroundColor: Colors.dark.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
     borderRadius: 10,
+    minWidth: 140,
+    alignItems: "center",
   },
 
   buttonPressed: {
@@ -88,6 +112,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: Colors.dark.primaryForeground,
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: 16,
   },
 });
