@@ -1,6 +1,14 @@
-import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useCallback } from "react";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  ActivityIndicator,
+} from "react-native";
+
 import GoogleIcon from "@/assets/images/icons/Google";
+import { useGoogleAuth as useGoogleSignIn } from "@/utils/googleAuth";
 
 interface SocialLoginProps {
   lang?: "en" | "de";
@@ -11,24 +19,40 @@ export default function SocialLogin({
   lang = "en",
   loading = false,
 }: SocialLoginProps) {
-  const handleGoogleLogin = async () => {};
+  const { signInWithGoogle, loading: authLoading } = useGoogleSignIn();
+
+  const handleGoogleLogin = useCallback(async () => {
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      console.error("Google Login Error:", error);
+    }
+  }, [signInWithGoogle]);
+
+  const isLoading = loading || authLoading;
+  const isDisabled = isLoading;
 
   return (
     <View style={styles.container}>
       <Pressable
         onPress={handleGoogleLogin}
-        disabled={loading}
+        disabled={isDisabled}
         style={({ pressed }) => [
           styles.button,
-          pressed && styles.pressed,
-          loading && styles.disabled,
+          pressed && !isDisabled && styles.pressed,
+          isDisabled && styles.disabled,
         ]}
       >
-        <GoogleIcon size={20} />
-
-        <Text style={styles.text}>
-          {loading ? (lang === "de" ? "Laden..." : "Loading...") : "Google"}
-        </Text>
+        {isLoading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <>
+            <GoogleIcon size={20} />
+            <Text style={styles.text}>
+              {lang === "de" ? "Mit Google anmelden" : "Continue with Google"}
+            </Text>
+          </>
+        )}
       </Pressable>
     </View>
   );
@@ -44,24 +68,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
-    paddingVertical: 12,
+    paddingVertical: 14,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: "#2a2a2a",
-    borderRadius: 10,
     backgroundColor: "#111",
   },
 
   pressed: {
-    opacity: 0.7,
+    opacity: 0.8,
   },
 
   disabled: {
-    opacity: 0.5,
+    opacity: 0.6,
   },
 
   text: {
+    color: "#fff",
     fontSize: 15,
     fontWeight: "600",
-    color: "#fff",
   },
 });

@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "279960900846",
+    "project_id": "metricas-e145c",
+    "storage_bucket": "metricas-e145c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:279960900846:android:1efe56eed48938a4438fff",
+        "android_client_info": {
+          "package_name": "com.metricas.android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "279960900846-4d3gdtu75f6mce7gn1v2imtcg29k77qe.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.metricas.android",
+            "certificate_hash": "f7623652d8d8516746d679b684c73b7f3c316863"
+          }
+        },
+        {
+          "client_id": "279960900846-a73m1d7suer9aelpbedhmr6uf7hbdi7f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9ATBAGD1kTkbfk4AJIIJ2urYSji4907s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "279960900846-a73m1d7suer9aelpbedhmr6uf7hbdi7f.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "279960900846-rsbpinser7tdcefs9cg3a988kg4ketii.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.metricas.iso"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

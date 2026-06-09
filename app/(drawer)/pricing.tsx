@@ -65,6 +65,7 @@ export default function Pricing() {
         }).unwrap();
         if (res?.message) {
           toast.success(res.message);
+          router.push(res?.data?.checkout_url);
         }
         if (redirect === "search") {
           router.push("/(drawer)/valuation/search");

@@ -172,7 +172,7 @@ export default function LoginForm() {
               <View style={styles.line} />
             </View>
 
-            <SocialLogin lang={lang} />
+            {/* <SocialLogin lang={lang} /> */}
 
             {/* FOOTER */}
             <View style={styles.footer}>
